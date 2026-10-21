@@ -1,0 +1,13 @@
+name: Multiline Example
+
+on:
+  pull_request:
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print PR title
+        run: |
+          echo "Mulai pemeriksaan"
+          echo "${{ github.event.pull_request.title }}"

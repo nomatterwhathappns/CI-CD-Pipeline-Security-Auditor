@@ -2,6 +2,8 @@ import argparse
 import re
 from pathlib import Path
 
+import yaml
+
 # Data PR ini ditulis oleh pengaju PR, jadi perlu hati-hati
 # jika dimasukkan langsung ke perintah shell.
 UNTRUSTED_PR_DATA = re.compile(
@@ -11,27 +13,57 @@ UNTRUSTED_PR_DATA = re.compile(
 
 
 def audit_file(path: Path) -> int:
-    """Periksa baris run: dan tampilkan temuan yang perlu ditinjau."""
+    """Periksa seluruh isi run: pada setiap langkah workflow."""
     findings = 0
 
     try:
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeError) as error:
-        print(f"ERROR: Tidak bisa membaca {path}: {error}")
-        return 0
+        text = path.read_text(encoding="utf-8")
+        workflow = yaml.safe_load(text)
 
-    for line_number, line in enumerate(lines, start=1):
-        if "run:" in line and UNTRUSTED_PR_DATA.search(line):
-            print(
-                f"WARNING: {path}:{line_number}: "
-                "data PR dipakai langsung pada baris run:. "
-                "Tinjau apakah nilainya dapat ditafsirkan sebagai perintah shell."
-            )
-            findings += 1
+        if not isinstance(workflow, dict):
+            raise ValueError("Isi workflow harus berupa struktur YAML dengan key.")
+
+        jobs = workflow.get("jobs", {})
+        if not isinstance(jobs, dict):
+            raise ValueError("Bagian jobs harus berupa kumpulan job.")
+
+        for job_name, job in jobs.items():
+            if not isinstance(job, dict):
+                raise ValueError(f"Job {job_name} memiliki format yang salah.")
+
+            steps = job.get("steps", [])
+            if not isinstance(steps, list):
+                raise ValueError(f"Bagian steps pada job {job_name} harus berupa daftar.")
+
+            for step_number, step in enumerate(steps, start=1):
+                if not isinstance(step, dict):
+                    raise ValueError(
+                        f"Langkah {step_number} pada job {job_name} tidak valid."
+                    )
+
+                command = step.get("run", "")
+
+                if not isinstance(command, str):
+                    raise ValueError(
+                        f"Isi run pada job {job_name}, "
+                        f"langkah {step_number}, harus berupa teks."
+                    )
+
+                if UNTRUSTED_PR_DATA.search(command):
+                    print(
+                        f"WARNING: {path}: job={job_name}, "
+                        f"langkah={step_number}: "
+                        "data PR dipakai langsung dalam run:. "
+                        "Tinjau risiko injeksi perintah shell."
+                    )
+                    findings += 1
+
+    except (OSError, UnicodeError, yaml.YAMLError, ValueError) as error:
+        print(f"ERROR: Gagal memindai {path}: {error}")
+        raise SystemExit(2)
 
     return findings
-
-
+    
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Pindai workflow GitHub Actions untuk pola yang perlu ditinjau."
