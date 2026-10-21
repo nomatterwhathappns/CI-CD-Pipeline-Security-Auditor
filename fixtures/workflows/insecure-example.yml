@@ -1,0 +1,15 @@
+name: Insecure Example
+
+on:
+  pull_request_target:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Print a token
+        run: echo "Token is ${{ secrets.DEPLOY_TOKEN }}"
+      - name: Run pull request title
+        run: echo "${{ github.event.pull_request.title }}"
