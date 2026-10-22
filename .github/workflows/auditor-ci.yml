@@ -33,7 +33,7 @@ jobs:
         run: python -m unittest discover -s tests -v
 
       - name: Audit workflow proyek
-        run: python src/auditor.py .github/workflows --fail-on-findings
+        run: python src/auditor.py fixtures/workflows/insecure-example.yml --fail-on-findings
 
       - name: Simulasi tahap lanjutan
         run: |
