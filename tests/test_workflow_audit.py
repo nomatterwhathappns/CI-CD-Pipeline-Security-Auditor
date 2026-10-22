@@ -28,13 +28,17 @@ class TestWorkflowAudit(unittest.TestCase):
         self.assertEqual(findings, 2)
         self.assertIn("action actions/checkout@v4", output)
         self.assertIn("data PR dipakai langsung", output)
+        self.assertIn("WARNING [GHA001]:", output)
+        self.assertIn("WARNING [GHA002]:", output)
 
     def test_multiline_run_reports_pr_data(self):
-        findings, output = self.scan_fixture("multiline-example.yml")
+            findings, output = self.scan_fixture("multiline-example.yml")
 
-        self.assertEqual(findings, 1)
-        self.assertIn("data PR dipakai langsung", output)
-        self.assertIn("job=example, langkah=1", output)
+            self.assertEqual(findings, 1)
+            self.assertIn("data PR dipakai langsung", output)
+            self.assertIn("job=example, langkah=1", output)
+            self.assertIn("WARNING [GHA002]:", output)
+            self.assertNotIn("WARNING [GHA001]:", output)
 
     def test_clean_workflow_has_no_findings(self):
         findings, output = self.scan_fixture("clean-example.yml")
