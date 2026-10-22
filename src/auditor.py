@@ -121,6 +121,12 @@ def main() -> int:
         default=".github/workflows",
         help="File atau folder workflow (default: .github/workflows)",
     )
+
+    parser.add_argument(
+        "--fail-on-findings",
+        action="store_true",
+        help="Keluar dengan status 1 jika ada temuan.",
+    )
     args = parser.parse_args()
 
     target = Path(args.path)
@@ -156,6 +162,10 @@ def main() -> int:
         f"Selesai: {len(workflow_files)} file dipindai, "
         f"{total_findings} temuan perlu ditinjau."
     )
+
+    if args.fail_on_findings and total_findings > 0:
+        return 1
+
     return 0
 
 

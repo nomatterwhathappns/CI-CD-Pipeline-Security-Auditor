@@ -57,6 +57,15 @@ Ganti lokasi contoh tersebut dengan lokasi proyek yang ingin diperiksa.
 Tanpa argumen lokasi, program memeriksa .github/workflows
 relatif terhadap folder Terminal saat ini.
 
+Untuk menghasilkan status 1 ketika ada temuan:
+
+```bash
+python3 src/auditor.py fixtures/workflows --fail-on-findings
+```
+
+Opsi ini berguna agar proses otomatis dapat menganggap temuan
+sebagai kegagalan pemeriksaan.
+
 Melihat bantuan:
 
 ```bash
@@ -76,8 +85,9 @@ Artinya aturan GHA001 cocok pada langkah pertama dalam job build.
 File tanpa temuan tidak menghasilkan baris WARNING,
 tetapi tetap dihitung dalam jumlah file yang dipindai.
 
-Status keluar program saat ini:
-- 0: proses selesai, termasuk ketika ada temuan.
+Status keluar program:
+- 0: pemindaian selesai; tanpa --fail-on-findings, temuan tidak mengubah status.
+- 1: ada temuan dan --fail-on-findings dipakai.
 - 2: terjadi kesalahan yang menghentikan pemindaian.
 
 ## Pengujian
@@ -86,8 +96,9 @@ Status keluar program saat ini:
 python3 -m unittest discover -s tests -v
 ```
 
-Pengujian mencakup aturan SHA dan pembacaan workflow contoh.
-Saat ini terdapat enam metode pengujian.
+Pengujian mencakup aturan SHA, pembacaan workflow contoh,
+serta perilaku opsi --fail-on-findings dan status keluar program.
+Saat ini terdapat sepuluh metode pengujian.
 
 ## Struktur proyek
 
