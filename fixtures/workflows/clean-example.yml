@@ -1,0 +1,13 @@
+name: Clean Example
+
+on:
+  push:
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print a message
+        run: |
+          echo "Mulai pemeriksaan"
+          echo "Pesan tetap untuk latihan"
