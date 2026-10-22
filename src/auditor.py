@@ -78,7 +78,7 @@ def audit_file(path: Path) -> int:
 
                 if action_is_unpinned(uses):
                     print(
-                        f"WARNING [GHA001]: {path}: job={job_name}, "
+                        f"WARNING [CHA001]: {path}: job={job_name}, "
                         f"langkah={step_number}: "
                         f"action {uses} belum dipatok ke SHA commit lengkap."
                     )
@@ -95,7 +95,7 @@ def audit_file(path: Path) -> int:
 
                 if UNTRUSTED_PR_DATA.search(command):
                     print(
-                        f"WARNING [GHA002]: {path}: job={job_name}, "
+                        f"WARNING [CHA002]: {path}: job={job_name}, "
                         f"langkah={step_number}: "
                         "data PR dipakai langsung dalam run:. "
                         "Tinjau risiko injeksi perintah shell."

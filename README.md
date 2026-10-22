@@ -9,10 +9,10 @@ Program membaca file YAML tanpa menjalankan workflow tersebut.
 
 | Kode | Pemeriksaan |
 |---|---|
-| GHA001 | Referensi action dari repo GitHub belum memakai SHA commit lengkap |
-| GHA002 | Ekspresi data PR tertentu dimasukkan langsung ke dalam run |
+| CHA001 | Referensi action dari repo GitHub belum memakai SHA commit lengkap |
+| CHA002 | Ekspresi data PR tertentu dimasukkan langsung ke dalam run |
 
-GHA002 saat ini memeriksa ekspresi langsung untuk:
+CHA002 saat ini memeriksa ekspresi langsung untuk:
 - github.event.pull_request.title
 - github.event.pull_request.body
 - github.event.pull_request.head.ref
@@ -77,10 +77,10 @@ python3 src/auditor.py --help
 Contoh:
 
 ```text
-WARNING [GHA001]: contoh.yml: job=build, langkah=1: ...
+WARNING [CHA001]: contoh.yml: job=build, langkah=1: ...
 ```
 
-Artinya aturan GHA001 cocok pada langkah pertama dalam job build.
+Artinya aturan CHA001 cocok pada langkah pertama dalam job build.
 
 File tanpa temuan tidak menghasilkan baris WARNING,
 tetapi tetap dihitung dalam jumlah file yang dipindai.
@@ -111,8 +111,8 @@ Saat ini terdapat sepuluh metode pengujian.
 
 - Temuan adalah peringatan untuk ditinjau, bukan bukti pasti adanya celah.
 - Tidak ada temuan bukan jaminan bahwa workflow aman.
-- GHA001 hanya memeriksa format SHA, bukan keberadaan atau keamanan commit.
-- Action lokal dan referensi Docker dilewati oleh aturan GHA001.
+- CHA001 hanya memeriksa format SHA, bukan keberadaan atau keamanan commit.
+- Action lokal dan referensi Docker dilewati oleh aturan CHA001.
 - Referensi reusable workflow pada tingkat job belum diperiksa.
-- GHA002 memakai pencocokan pola terbatas, bukan analisis lengkap shell.
+- CHA002 memakai pencocokan pola terbatas, bukan analisis lengkap shell.
 - Pemeriksaan kebocoran secret dan pemicu berisiko belum dibuat.

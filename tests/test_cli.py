@@ -31,8 +31,8 @@ class TestCLI(unittest.TestCase):
         )
 
         self.assertEqual(result.returncode, 0)
-        self.assertIn("WARNING [GHA001]:", result.stdout)
-        self.assertIn("WARNING [GHA002]:", result.stdout)
+        self.assertIn("WARNING [CHA001]:", result.stdout)
+        self.assertIn("WARNING [CHA002]:", result.stdout)
 
     def test_option_returns_one_when_findings_exist(self):
         result = self.run_auditor(
@@ -41,7 +41,7 @@ class TestCLI(unittest.TestCase):
         )
 
         self.assertEqual(result.returncode, 1)
-        self.assertIn("WARNING [GHA001]:", result.stdout)
+        self.assertIn("WARNING [CHA001]:", result.stdout)
 
     def test_option_returns_zero_without_findings(self):
         result = self.run_auditor(
