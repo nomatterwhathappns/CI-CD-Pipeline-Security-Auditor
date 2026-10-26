@@ -1,11 +1,12 @@
 import argparse
+import json
 import re
 from pathlib import Path
 
 import yaml
 
 
-# Pola data PR yang kita periksa ketika dipakai langsung dalam run.
+# Pola data PR yang diperiksa ketika dipakai langsung dalam run.
 UNTRUSTED_PR_DATA = re.compile(
     r"\$\{\{\s*github\.event\.pull_request\."
     r"(?:title|body|head\.ref|head\.label)\s*\}\}"
@@ -29,100 +30,135 @@ def action_is_unpinned(uses: str) -> bool:
     return re.fullmatch(r"[0-9a-fA-F]{40}", reference) is None
 
 
-def audit_file(path: Path) -> int:
-    """Periksa action dan seluruh isi run pada setiap langkah workflow."""
-    findings = 0
+def collect_findings(path: Path) -> list[dict]:
+    """Baca workflow dan kembalikan data temuan."""
+    findings = []
 
-    try:
-        text = path.read_text(encoding="utf-8")
-        workflow = yaml.safe_load(text)
+    def add_finding(rule_id, message, job=None, step=None):
+        findings.append({
+            "rule_id": rule_id,
+            "file": str(path),
+            "job": job,
+            "step": step,
+            "message": message,
+        })
 
-        if not isinstance(workflow, dict):
+    text = path.read_text(encoding="utf-8")
+    workflow = yaml.safe_load(text)
+
+    if not isinstance(workflow, dict):
+        raise ValueError(
+            "Isi workflow harus berupa struktur YAML dengan key."
+        )
+
+    # CHA003: periksa izin pada tingkat workflow.
+    if workflow.get("permissions") == "write-all":
+        add_finding(
+            "CHA003",
+            "permissions: write-all meminta izin tulis luas. "
+            "Tinjau dan batasi sesuai kebutuhan.",
+        )
+
+    jobs = workflow.get("jobs", {})
+
+    if not isinstance(jobs, dict):
+        raise ValueError("Bagian jobs harus berupa kumpulan job.")
+
+    for job_name, job in jobs.items():
+        if not isinstance(job, dict):
             raise ValueError(
-                "Isi workflow harus berupa struktur YAML dengan key."
+                f"Job {job_name} memiliki format yang salah."
             )
 
-        if workflow.get("permissions") == "write-all":
-            print(
-                f"WARNING [CHA003]: {path}: level=workflow: "
+        # CHA003: periksa izin pada tingkat job.
+        if job.get("permissions") == "write-all":
+            add_finding(
+                "CHA003",
                 "permissions: write-all meminta izin tulis luas. "
-                "Tinjau dan batasi sesuai kebutuhan."
+                "Tinjau dan batasi sesuai kebutuhan.",
+                job=job_name,
             )
-            findings += 1
 
-        jobs = workflow.get("jobs", {})
+        steps = job.get("steps", [])
 
-        if not isinstance(jobs, dict):
-            raise ValueError("Bagian jobs harus berupa kumpulan job.")
+        if not isinstance(steps, list):
+            raise ValueError(
+                f"Bagian steps pada job {job_name} harus berupa daftar."
+            )
 
-        for job_name, job in jobs.items():
-            if not isinstance(job, dict):
+        for step_number, step in enumerate(steps, start=1):
+            if not isinstance(step, dict):
                 raise ValueError(
-                    f"Job {job_name} memiliki format yang salah."
+                    f"Langkah {step_number} pada job "
+                    f"{job_name} tidak valid."
                 )
 
-            if job.get("permissions") == "write-all":
-                print(
-                    f"WARNING [CHA003]: {path}: job={job_name}: "
-                    "permissions: write-all meminta izin tulis luas. "
-                    "Tinjau dan batasi sesuai kebutuhan."
-                )
-                findings += 1
+            # CHA001: periksa referensi action.
+            uses = step.get("uses", "")
 
-            steps = job.get("steps", [])
-
-            if not isinstance(steps, list):
+            if not isinstance(uses, str):
                 raise ValueError(
-                    f"Bagian steps pada job {job_name} harus berupa daftar."
+                    f"Isi uses pada job {job_name}, "
+                    f"langkah {step_number}, harus berupa teks."
                 )
 
-            for step_number, step in enumerate(steps, start=1):
-                if not isinstance(step, dict):
-                    raise ValueError(
-                        f"Langkah {step_number} pada job "
-                        f"{job_name} tidak valid."
-                    )
+            if action_is_unpinned(uses):
+                add_finding(
+                    "CHA001",
+                    f"action {uses} belum dipatok ke SHA commit lengkap.",
+                    job=job_name,
+                    step=step_number,
+                )
 
-                # Aturan pertama: periksa referensi action.
-                uses = step.get("uses", "")
+            # CHA002: periksa data PR dalam perintah shell.
+            command = step.get("run", "")
 
-                if not isinstance(uses, str):
-                    raise ValueError(
-                        f"Isi uses pada job {job_name}, "
-                        f"langkah {step_number}, harus berupa teks."
-                    )
+            if not isinstance(command, str):
+                raise ValueError(
+                    f"Isi run pada job {job_name}, "
+                    f"langkah {step_number}, harus berupa teks."
+                )
 
-                if action_is_unpinned(uses):
-                    print(
-                        f"WARNING [CHA001]: {path}: job={job_name}, "
-                        f"langkah={step_number}: "
-                        f"action {uses} belum dipatok ke SHA commit lengkap."
-                    )
-                    findings += 1
+            if UNTRUSTED_PR_DATA.search(command):
+                add_finding(
+                    "CHA002",
+                    "data PR dipakai langsung dalam run:. "
+                    "Tinjau risiko injeksi perintah shell.",
+                    job=job_name,
+                    step=step_number,
+                )
 
-                # Aturan kedua: periksa data PR di dalam perintah shell.
-                command = step.get("run", "")
+    return findings
 
-                if not isinstance(command, str):
-                    raise ValueError(
-                        f"Isi run pada job {job_name}, "
-                        f"langkah {step_number}, harus berupa teks."
-                    )
 
-                if UNTRUSTED_PR_DATA.search(command):
-                    print(
-                        f"WARNING [CHA002]: {path}: job={job_name}, "
-                        f"langkah={step_number}: "
-                        "data PR dipakai langsung dalam run:. "
-                        "Tinjau risiko injeksi perintah shell."
-                    )
-                    findings += 1
+def print_text_findings(findings: list[dict]) -> None:
+    """Tampilkan data temuan sebagai peringatan teks."""
+    for finding in findings:
+        location = "level=workflow"
 
+        if finding["job"] is not None:
+            location = f"job={finding['job']}"
+
+            if finding["step"] is not None:
+                location += f", langkah={finding['step']}"
+
+        print(
+            f"WARNING [{finding['rule_id']}]: "
+            f"{finding['file']}: {location}: "
+            f"{finding['message']}"
+        )
+
+
+def audit_file(path: Path) -> int:
+    """Periksa satu file, tampilkan temuan, dan kembalikan jumlahnya."""
+    try:
+        findings = collect_findings(path)
     except (OSError, UnicodeError, yaml.YAMLError, ValueError) as error:
         print(f"ERROR: Gagal memindai {path}: {error}")
         raise SystemExit(2)
 
-    return findings
+    print_text_findings(findings)
+    return len(findings)
 
 
 def main() -> int:
@@ -137,49 +173,87 @@ def main() -> int:
         default=".github/workflows",
         help="File atau folder workflow (default: .github/workflows)",
     )
-
     parser.add_argument(
         "--fail-on-findings",
         action="store_true",
         help="Keluar dengan status 1 jika ada temuan.",
     )
+    parser.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Format keluaran laporan (default: text).",
+    )
     args = parser.parse_args()
 
     target = Path(args.path)
+    workflow_files = []
 
-    if not target.exists():
-        print(f"ERROR: Lokasi tidak ditemukan: {target}")
-        return 2
+    report = {
+        "files_scanned": 0,
+        "findings_count": 0,
+        "findings": [],
+        "errors": [],
+    }
 
-    if target.is_file():
-        workflow_files = (
-            [target]
-            if target.suffix.lower() in {".yml", ".yaml"}
-            else []
-        )
-    else:
-        workflow_files = sorted(
-            path
-            for path in target.rglob("*")
-            if path.is_file()
-            and path.suffix.lower() in {".yml", ".yaml"}
-        )
+    try:
+        if not target.exists():
+            raise FileNotFoundError("Lokasi tidak ditemukan.")
 
-    if not workflow_files:
-        print(f"Tidak ada file .yml atau .yaml ditemukan di {target}")
-        return 0
+        if target.is_file():
+            if target.suffix.lower() in {".yml", ".yaml"}:
+                workflow_files = [target]
+        else:
+            workflow_files = sorted(
+                path
+                for path in target.rglob("*")
+                if path.is_file()
+                and path.suffix.lower() in {".yml", ".yaml"}
+            )
 
-    total_findings = 0
+    except (OSError, ValueError) as error:
+        report["errors"].append({
+            "file": str(target),
+            "message": str(error),
+        })
 
     for workflow_file in workflow_files:
-        total_findings += audit_file(workflow_file)
+        try:
+            file_findings = collect_findings(workflow_file)
 
-    print(
-        f"Selesai: {len(workflow_files)} file dipindai, "
-        f"{total_findings} temuan perlu ditinjau."
-    )
+        except (OSError, UnicodeError, yaml.YAMLError, ValueError) as error:
+            report["errors"].append({
+                "file": str(workflow_file),
+                "message": str(error),
+            })
+            continue
 
-    if args.fail_on_findings and total_findings > 0:
+        report["files_scanned"] += 1
+        report["findings"].extend(file_findings)
+
+    report["findings_count"] = len(report["findings"])
+
+    if args.format == "json":
+        print(json.dumps(report, indent=2, ensure_ascii=False))
+
+    else:
+        print_text_findings(report["findings"])
+
+        for error in report["errors"]:
+            print(f"ERROR: {error['file']}: {error['message']}")
+
+        if report["files_scanned"] > 0:
+            print(
+                f"Selesai: {report['files_scanned']} file dipindai, "
+                f"{report['findings_count']} temuan perlu ditinjau."
+            )
+        elif not report["errors"]:
+            print(f"Tidak ada file .yml atau .yaml ditemukan di {target}")
+
+    if report["errors"]:
+        return 2
+
+    if args.fail_on_findings and report["findings_count"] > 0:
         return 1
 
     return 0

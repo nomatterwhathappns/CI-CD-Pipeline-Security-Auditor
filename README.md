@@ -118,3 +118,29 @@ Saat ini terdapat 14 metode pengujian.
 - CHA002 memakai pencocokan pola terbatas, bukan analisis lengkap shell.
 - Pemeriksaan kebocoran secret dan pemicu berisiko belum dibuat.
 - CHA003 hanya menandai deklarasi write-all secara langsung; izin efektif dan kebutuhan izin belum dianalisis.
+
+### Laporan JSON
+
+Menampilkan laporan JSON:
+
+```bash
+python3 src/auditor.py fixtures/workflows --format json
+```
+
+Menyimpan laporan:
+
+```bash
+mkdir -p reports
+python3 src/auditor.py fixtures/workflows --format json > reports/audit-report.json
+```
+
+Isi laporan:
+- files_scanned: jumlah file yang berhasil diperiksa.
+- findings_count: jumlah temuan.
+- findings: daftar detail temuan.
+- errors: daftar kegagalan pemindaian.
+
+Nilai null pada job atau step berarti lokasi tersebut tidak berlaku.
+
+Jika ada kegagalan pemindaian, status keluar adalah 2,
+termasuk ketika laporan juga berisi temuan keamanan.
