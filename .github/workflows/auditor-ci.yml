@@ -35,7 +35,7 @@ jobs:
       - name: Audit workflow proyek
         run: |
           mkdir -p reports
-          python src/auditor.py .github/workflows --format json --fail-on-findings > reports/audit-report.json
+          python src/auditor.py fixtures/workflows/insecure-example.yml --format json --fail-on-findings > reports/audit-report.json
 
       - name: Simpan laporan audit
         if: always()
