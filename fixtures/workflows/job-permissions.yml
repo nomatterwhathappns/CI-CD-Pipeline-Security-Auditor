@@ -1,0 +1,11 @@
+name: Job Permissions Example
+
+on:
+  push:
+
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - run: echo "Contoh izin tingkat job"

@@ -42,6 +42,14 @@ def audit_file(path: Path) -> int:
                 "Isi workflow harus berupa struktur YAML dengan key."
             )
 
+        if workflow.get("permissions") == "write-all":
+            print(
+                f"WARNING [CHA003]: {path}: level=workflow: "
+                "permissions: write-all meminta izin tulis luas. "
+                "Tinjau dan batasi sesuai kebutuhan."
+            )
+            findings += 1
+
         jobs = workflow.get("jobs", {})
 
         if not isinstance(jobs, dict):
@@ -52,6 +60,14 @@ def audit_file(path: Path) -> int:
                 raise ValueError(
                     f"Job {job_name} memiliki format yang salah."
                 )
+
+            if job.get("permissions") == "write-all":
+                print(
+                    f"WARNING [CHA003]: {path}: job={job_name}: "
+                    "permissions: write-all meminta izin tulis luas. "
+                    "Tinjau dan batasi sesuai kebutuhan."
+                )
+                findings += 1
 
             steps = job.get("steps", [])
 

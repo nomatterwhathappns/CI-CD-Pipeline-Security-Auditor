@@ -11,6 +11,7 @@ Program membaca file YAML tanpa menjalankan workflow tersebut.
 |---|---|
 | CHA001 | Referensi action dari repo GitHub belum memakai SHA commit lengkap |
 | CHA002 | Ekspresi data PR tertentu dimasukkan langsung ke dalam run |
+| CHA003 | Deklarasi permissions: write-all pada tingkat workflow atau job |
 
 CHA002 saat ini memeriksa ekspresi langsung untuk:
 - github.event.pull_request.title
@@ -96,9 +97,9 @@ Status keluar program:
 python3 -m unittest discover -s tests -v
 ```
 
-Pengujian mencakup aturan SHA, pembacaan workflow contoh,
-serta perilaku opsi --fail-on-findings dan status keluar program.
-Saat ini terdapat sepuluh metode pengujian.
+Pengujian mencakup aturan SHA, data PR dalam run,
+izin workflow dan job, serta opsi dan status keluar program.
+Saat ini terdapat 14 metode pengujian.
 
 ## Struktur proyek
 
@@ -116,3 +117,4 @@ Saat ini terdapat sepuluh metode pengujian.
 - Referensi reusable workflow pada tingkat job belum diperiksa.
 - CHA002 memakai pencocokan pola terbatas, bukan analisis lengkap shell.
 - Pemeriksaan kebocoran secret dan pemicu berisiko belum dibuat.
+- CHA003 hanya menandai deklarasi write-all secara langsung; izin efektif dan kebutuhan izin belum dianalisis.
