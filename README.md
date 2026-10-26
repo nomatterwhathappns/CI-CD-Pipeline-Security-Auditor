@@ -144,3 +144,14 @@ Nilai null pada job atau step berarti lokasi tersebut tidak berlaku.
 
 Jika ada kegagalan pemindaian, status keluar adalah 2,
 termasuk ketika laporan juga berisi temuan keamanan.
+
+### Laporan dari GitHub Actions
+
+Workflow Auditor CI menyimpan laporan JSON sebagai artifact
+bernama workflow-audit-report selama tujuh hari.
+
+Unduh melalui Actions, pilih proses yang sudah selesai,
+lalu buka bagian Artifacts.
+
+Penyimpanan laporan tetap dicoba ketika audit gagal.
+Laporan tersedia jika langkah audit berhasil menghasilkan file.
