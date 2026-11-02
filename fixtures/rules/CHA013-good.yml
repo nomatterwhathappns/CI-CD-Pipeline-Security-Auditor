@@ -1,0 +1,20 @@
+# Static audit fixture; this file is never executed by the tests.
+name: Static auditor example; do not install as a workflow
+'on':
+  workflow_run:
+    workflows:
+    - CI
+    types:
+    - completed
+permissions:
+  contents: read
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85
+      with:
+        github-token: ${{ github.token }}
+        run-id: ${{ github.event.workflow_run.id }}
+        path: ${{ runner.temp }}/untrusted-reports
+    - run: wc -c "$RUNNER_TEMP/untrusted-reports/report.txt"

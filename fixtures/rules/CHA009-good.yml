@@ -1,0 +1,11 @@
+# Static audit fixture; this file is never executed by the tests.
+name: Static auditor example; do not install as a workflow
+'on': push
+permissions:
+  contents: read
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    container: alpine@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    steps:
+    - run: echo container-example

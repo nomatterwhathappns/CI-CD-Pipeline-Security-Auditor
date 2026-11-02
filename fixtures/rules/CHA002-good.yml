@@ -1,0 +1,12 @@
+# Static audit fixture; this file is never executed by the tests.
+name: Static auditor example; do not install as a workflow
+'on': pull_request
+permissions:
+  contents: read
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+    - env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+      run: printf '%s\n' "$PR_TITLE"

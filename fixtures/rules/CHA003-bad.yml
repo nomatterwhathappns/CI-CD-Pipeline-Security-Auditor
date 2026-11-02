@@ -1,0 +1,9 @@
+# Static audit fixture; this file is never executed by the tests.
+name: Static auditor example; do not install as a workflow
+'on': push
+permissions: write-all
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo permissions-example

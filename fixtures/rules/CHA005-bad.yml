@@ -1,0 +1,7 @@
+# Static audit fixture; this file is never executed by the tests.
+name: Static reusable-workflow example
+'on': workflow_dispatch
+jobs:
+  call:
+    uses: ./.github/workflows/reusable.yml
+    secrets: inherit

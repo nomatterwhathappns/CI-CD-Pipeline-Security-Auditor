@@ -1,263 +1,165 @@
+"""Command line interface; rule implementations live in src/rules."""
+
 import argparse
 import json
-import re
 from pathlib import Path
+import sys
 
-import yaml
+# Preserve both python src/auditor.py and python -m src.auditor entry points.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-
-# Pola data PR yang diperiksa ketika dipakai langsung dalam run.
-UNTRUSTED_PR_DATA = re.compile(
-    r"\$\{\{\s*github\.event\.pull_request\."
-    r"(?:title|body|head\.ref|head\.label)\s*\}\}"
+from src import __version__
+from src.engine import (
+    AuditError,
+    action_is_unpinned,
+    audit_file,
+    collect_findings,
+    display_text,
+    print_text_findings,
 )
+from src.registry import RULES, SEVERITIES
 
 
-def action_is_unpinned(uses: str) -> bool:
-    """Kembalikan True jika action belum memakai SHA commit lengkap."""
-    if not uses:
-        return False
-
-    # Action lokal dan image Docker memerlukan aturan tersendiri.
-    if uses.startswith(("./", "docker://")):
-        return False
-
-    _, separator, reference = uses.rpartition("@")
-
-    if not separator:
-        return True
-
-    return re.fullmatch(r"[0-9a-fA-F]{40}", reference) is None
+def _error(report, path, message):
+    report["errors"].append({"file": str(path), "message": message})
 
 
-def collect_findings(path: Path) -> list[dict]:
-    """Baca workflow dan kembalikan data temuan."""
-    findings = []
-
-    def add_finding(rule_id, message, job=None, step=None):
-        findings.append({
-            "rule_id": rule_id,
-            "file": str(path),
-            "job": job,
-            "step": step,
-            "message": message,
-        })
-
-    text = path.read_text(encoding="utf-8")
-    workflow = yaml.safe_load(text)
-
-    if not isinstance(workflow, dict):
-        raise ValueError(
-            "Isi workflow harus berupa struktur YAML dengan key."
-        )
-
-    # CHA003: periksa izin pada tingkat workflow.
-    if workflow.get("permissions") == "write-all":
-        add_finding(
-            "CHA003",
-            "permissions: write-all meminta izin tulis luas. "
-            "Tinjau dan batasi sesuai kebutuhan.",
-        )
-
-    jobs = workflow.get("jobs", {})
-
-    if not isinstance(jobs, dict):
-        raise ValueError("Bagian jobs harus berupa kumpulan job.")
-
-    for job_name, job in jobs.items():
-        if not isinstance(job, dict):
-            raise ValueError(
-                f"Job {job_name} memiliki format yang salah."
-            )
-
-        # CHA003: periksa izin pada tingkat job.
-        if job.get("permissions") == "write-all":
-            add_finding(
-                "CHA003",
-                "permissions: write-all meminta izin tulis luas. "
-                "Tinjau dan batasi sesuai kebutuhan.",
-                job=job_name,
-            )
-
-        steps = job.get("steps", [])
-
-        if not isinstance(steps, list):
-            raise ValueError(
-                f"Bagian steps pada job {job_name} harus berupa daftar."
-            )
-
-        for step_number, step in enumerate(steps, start=1):
-            if not isinstance(step, dict):
-                raise ValueError(
-                    f"Langkah {step_number} pada job "
-                    f"{job_name} tidak valid."
-                )
-
-            # CHA001: periksa referensi action.
-            uses = step.get("uses", "")
-
-            if not isinstance(uses, str):
-                raise ValueError(
-                    f"Isi uses pada job {job_name}, "
-                    f"langkah {step_number}, harus berupa teks."
-                )
-
-            if action_is_unpinned(uses):
-                add_finding(
-                    "CHA001",
-                    f"action {uses} belum dipatok ke SHA commit lengkap.",
-                    job=job_name,
-                    step=step_number,
-                )
-
-            # CHA002: periksa data PR dalam perintah shell.
-            command = step.get("run", "")
-
-            if not isinstance(command, str):
-                raise ValueError(
-                    f"Isi run pada job {job_name}, "
-                    f"langkah {step_number}, harus berupa teks."
-                )
-
-            if UNTRUSTED_PR_DATA.search(command):
-                add_finding(
-                    "CHA002",
-                    "data PR dipakai langsung dalam run:. "
-                    "Tinjau risiko injeksi perintah shell.",
-                    job=job_name,
-                    step=step_number,
-                )
-
-    return findings
+def _parse_ignored(values, parser):
+    ignored = set()
+    for value in values:
+        for rule_id in value.split(","):
+            rule_id = rule_id.strip().upper()
+            if rule_id not in RULES:
+                parser.error(f"Kode aturan tidak dikenal: {rule_id}")
+            ignored.add(rule_id)
+    return ignored
 
 
-def print_text_findings(findings: list[dict]) -> None:
-    """Tampilkan data temuan sebagai peringatan teks."""
-    for finding in findings:
-        location = "level=workflow"
-
-        if finding["job"] is not None:
-            location = f"job={finding['job']}"
-
-            if finding["step"] is not None:
-                location += f", langkah={finding['step']}"
-
-        print(
-            f"WARNING [{finding['rule_id']}]: "
-            f"{finding['file']}: {location}: "
-            f"{finding['message']}"
-        )
-
-
-def audit_file(path: Path) -> int:
-    """Periksa satu file, tampilkan temuan, dan kembalikan jumlahnya."""
-    try:
-        findings = collect_findings(path)
-    except (OSError, UnicodeError, yaml.YAMLError, ValueError) as error:
-        print(f"ERROR: Gagal memindai {path}: {error}")
-        raise SystemExit(2)
-
-    print_text_findings(findings)
-    return len(findings)
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Pindai workflow GitHub Actions untuk pola yang perlu ditinjau."
-        )
+def _discover(target):
+    if target.is_symlink():
+        raise AuditError("Target symlink tidak diperiksa. Pilih file/folder aslinya.")
+    if not target.exists():
+        raise AuditError("Lokasi tidak ditemukan.")
+    if target.is_file():
+        if target.suffix.lower() not in {".yml", ".yaml"}:
+            raise AuditError("Target file harus memiliki ekstensi .yml atau .yaml.")
+        return [target]
+    excluded = {".git", ".venv", "__pycache__", "node_modules"}
+    paths = sorted(
+        path for path in target.rglob("*")
+        if not excluded.intersection(path.relative_to(target).parts)
+        and not path.is_symlink()
+        and path.is_file()
+        and path.suffix.lower() in {".yml", ".yaml"}
     )
-    parser.add_argument(
-        "path",
-        nargs="?",
-        default=".github/workflows",
-        help="File atau folder workflow (default: .github/workflows)",
-    )
-    parser.add_argument(
-        "--fail-on-findings",
-        action="store_true",
-        help="Keluar dengan status 1 jika ada temuan.",
-    )
-    parser.add_argument(
-        "--format",
-        choices=("text", "json"),
-        default="text",
-        help="Format keluaran laporan (default: text).",
-    )
-    args = parser.parse_args()
+    if not paths:
+        raise AuditError("Tidak ada file workflow YAML ditemukan di target.")
+    return paths
 
-    target = Path(args.path)
-    workflow_files = []
 
+def make_report(target, ignored=None, advisory_file=None):
+    from src.rules.guards import load_advisory_data
+
+    ignored = set(ignored or ())
     report = {
+        "schema_version": "1.1",
+        "auditor_version": __version__,
         "files_scanned": 0,
         "findings_count": 0,
         "findings": [],
         "errors": [],
+        "rules_enabled": [rule_id for rule_id in RULES if rule_id not in ignored],
+        "rules_ignored": sorted(ignored),
+        "advisory_snapshot": None,
     }
-
     try:
-        if not target.exists():
-            raise FileNotFoundError("Lokasi tidak ditemukan.")
-
-        if target.is_file():
-            if target.suffix.lower() in {".yml", ".yaml"}:
-                workflow_files = [target]
-        else:
-            workflow_files = sorted(
-                path
-                for path in target.rglob("*")
-                if path.is_file()
-                and path.suffix.lower() in {".yml", ".yaml"}
-            )
-
+        data = load_advisory_data(advisory_file)
+    except (OSError, UnicodeError, ValueError):
+        _error(report, advisory_file or "bundled-advisories", "Data advisory tidak dapat dibaca atau formatnya tidak valid.")
+        return report
+    report["advisory_snapshot"] = {
+        "checked_at": data["checked_at"],
+        "coverage": data["coverage"],
+        "entries": len(data["advisories"]),
+    }
+    try:
+        paths = _discover(Path(target))
     except (OSError, ValueError) as error:
-        report["errors"].append({
-            "file": str(target),
-            "message": str(error),
-        })
+        message = str(error) if isinstance(error, AuditError) else "Target tidak dapat diakses."
+        _error(report, target, message)
+        return report
 
-    for workflow_file in workflow_files:
+    for path in paths:
         try:
-            file_findings = collect_findings(workflow_file)
-
-        except (OSError, UnicodeError, yaml.YAMLError, ValueError) as error:
-            report["errors"].append({
-                "file": str(workflow_file),
-                "message": str(error),
-            })
+            findings = collect_findings(path, ignored=ignored, advisory_data=data)
+        except (OSError, UnicodeError, ValueError) as error:
+            message = str(error) if isinstance(error, AuditError) else "File gagal diperiksa; periksa struktur workflow dan konfigurasi."
+            _error(report, path, message)
             continue
-
         report["files_scanned"] += 1
-        report["findings"].extend(file_findings)
-
+        report["findings"].extend(findings)
     report["findings_count"] = len(report["findings"])
+    return report
 
-    if args.format == "json":
-        print(json.dumps(report, indent=2, ensure_ascii=False))
 
-    else:
-        print_text_findings(report["findings"])
+def print_report(report, output_format):
+    if output_format == "json":
+        print(json.dumps(report, indent=2, ensure_ascii=True, allow_nan=False))
+        return
+    print_text_findings(report["findings"])
+    for error in report["errors"]:
+        print(display_text(f"ERROR: {error['file']}: {error['message']}"))
+    if report["files_scanned"]:
+        print(
+            f"Selesai: {report['files_scanned']} file dipindai, "
+            f"{report['findings_count']} temuan perlu ditinjau."
+        )
 
-        for error in report["errors"]:
-            print(f"ERROR: {error['file']}: {error['message']}")
 
-        if report["files_scanned"] > 0:
-            print(
-                f"Selesai: {report['files_scanned']} file dipindai, "
-                f"{report['findings_count']} temuan perlu ditinjau."
-            )
-        elif not report["errors"]:
-            print(f"Tidak ada file .yml atau .yaml ditemukan di {target}")
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Audit statis GitHub Actions dengan aturan CHA001–CHA020."
+    )
+    parser.add_argument("path", nargs="?", default=".github/workflows",
+                        help="File/folder workflow (default: .github/workflows)")
+    parser.add_argument("--format", choices=("text", "json"), default="text",
+                        help="Format laporan (default: text).")
+    parser.add_argument("--fail-on-findings", action="store_true",
+                        help="Status 1 jika ada temuan yang mencapai ambang risiko.")
+    parser.add_argument("--fail-on-severity", choices=tuple(SEVERITIES), default="low",
+                        help="Ambang risiko bersama --fail-on-findings (default: low).")
+    parser.add_argument("--ignore", action="append", default=[], metavar="CHAxxx[,CHAyyy]",
+                        help="Lewati aturan tertentu; opsi boleh diulang.")
+    parser.add_argument("--advisory-file", type=Path,
+                        help="Gunakan snapshot advisory JSON lokal yang tervalidasi.")
+    parser.add_argument("--list-rules", action="store_true",
+                        help="Tampilkan 20 aturan beserta cakupan dan referensinya.")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    args = parser.parse_args(argv)
+    ignored = _parse_ignored(args.ignore, parser)
 
+    if args.list_rules:
+        if args.format == "json":
+            print(json.dumps({"rules": list(RULES.values())}, indent=2, ensure_ascii=False))
+        else:
+            for rule in RULES.values():
+                print(f"{rule['rule_id']} [{rule['severity']}]: {rule['title']}")
+        return 0
+
+    report = make_report(args.path, ignored=ignored, advisory_file=args.advisory_file)
+    print_report(report, args.format)
     if report["errors"]:
         return 2
-
-    if args.fail_on_findings and report["findings_count"] > 0:
+    threshold = SEVERITIES[args.fail_on_severity]
+    if args.fail_on_findings and any(
+        SEVERITIES[finding["severity"]] >= threshold
+        for finding in report["findings"]
+    ):
         return 1
-
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

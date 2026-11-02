@@ -1,0 +1,15 @@
+# Static audit fixture; this file is never executed by the tests.
+name: Static auditor example; do not install as a workflow
+'on': push
+permissions:
+  contents: read
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/example/demo:1
+      credentials:
+        username: demo
+        password: DEMO_ONLY_NOT_A_REAL_SECRET
+    steps:
+    - run: echo registry-example

@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "coverage": "One bad and one good static YAML example per enabled rule. Every good example is also checked against all twenty rules. No finding is not a complete security assessment. Fixtures stay outside .github/workflows and are never executed. Image digests are illustrative. Selected action tag-to-commit mappings were verified against GitHub API on 2026-11-02.",
+  "examples": [
+    {
+      "rule_id": "CHA001",
+      "bad": "CHA001-bad.yml",
+      "good": "CHA001-good.yml",
+      "notes": "A moving action tag versus a full commit reference. Review the commit and keep it updated.",
+      "source": "https://docs.github.com/en/actions/reference/security/secure-use"
+    },
+    {
+      "rule_id": "CHA002",
+      "bad": "CHA002-bad.yml",
+      "good": "CHA002-good.yml",
+      "notes": "Pass untrusted PR text through an environment variable rather than substituting it into shell source.",
+      "source": "https://codeql.github.com/codeql-query-help/actions/actions-code-injection-critical/"
+    },
+    {
+      "rule_id": "CHA003",
+      "bad": "CHA003-bad.yml",
+      "good": "CHA003-good.yml",
+      "notes": "Broad token write permissions versus the individual contents: read permission.",
+      "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions"
+    },
+    {
+      "rule_id": "CHA004",
+      "bad": "CHA004-bad.yml",
+      "good": "CHA004-good.yml",
+      "notes": "The bad value is an explicit noncredential demo marker. Findings must not reproduce credential candidates.",
+      "source": "https://docs.github.com/en/actions/reference/security/secure-use#use-secrets-for-sensitive-information"
+    },
+    {
+      "rule_id": "CHA005",
+      "bad": "CHA005-bad.yml",
+      "good": "CHA005-good.yml",
+      "notes": "Forward one explicitly named secret instead of inheriting every available secret. The called workflow is illustrative.",
+      "source": "https://docs.zizmor.sh/audits/#secrets-inherit"
+    },
+    {
+      "rule_id": "CHA006",
+      "bad": "CHA006-bad.yml",
+      "good": "CHA006-good.yml",
+      "notes": "Exporting the entire secrets context versus forwarding only the required secret.",
+      "source": "https://codeql.github.com/codeql-query-help/actions/actions-excessive-secrets-exposure/"
+    },
+    {
+      "rule_id": "CHA007",
+      "bad": "CHA007-bad.yml",
+      "good": "CHA007-good.yml",
+      "notes": "The good example treats the response as a file and does not execute it. example.invalid is an inert demonstration domain.",
+      "source": "https://cwe.mitre.org/data/definitions/494.html"
+    },
+    {
+      "rule_id": "CHA008",
+      "bad": "CHA008-bad.yml",
+      "good": "CHA008-good.yml",
+      "notes": "Disable HTTPS certificate verification versus keeping certificate checks enabled.",
+      "source": "https://curl.se/docs/sslcerts.html"
+    },
+    {
+      "rule_id": "CHA009",
+      "bad": "CHA009-bad.yml",
+      "good": "CHA009-good.yml",
+      "notes": "Mutable image tag versus full digest syntax. The digest is illustrative; resolve a real reviewed digest before deploying.",
+      "source": "https://docs.docker.com/reference/cli/docker/image/pull/"
+    },
+    {
+      "rule_id": "CHA010",
+      "bad": "CHA010-bad.yml",
+      "good": "CHA010-good.yml",
+      "notes": "A literal noncredential password marker versus a named secret reference. Reports must omit the literal value. The good image uses an illustrative full digest; resolve a real reviewed digest before deploying.",
+      "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idcontainercredentials"
+    },
+    {
+      "rule_id": "CHA011",
+      "bad": "CHA011-bad.yml",
+      "good": "CHA011-good.yml",
+      "notes": "Public PR eligibility on a self-hosted runner versus a GitHub-hosted runner. Repository approval and isolation settings require separate review.",
+      "source": "https://docs.github.com/en/actions/reference/security/secure-use#hardening-for-self-hosted-runners"
+    },
+    {
+      "rule_id": "CHA012",
+      "bad": "CHA012-bad.yml",
+      "good": "CHA012-good.yml",
+      "notes": "Privileged PR automation executes the PR head versus the trusted default checkout. This example uses a legacy checkout commit.",
+      "source": "https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target"
+    },
+    {
+      "rule_id": "CHA013",
+      "bad": "CHA013-bad.yml",
+      "good": "CHA013-good.yml",
+      "notes": "An upstream artifact overwrites executable workspace files versus downloading separately and reading data without executing it. Provenance still needs review.",
+      "source": "https://codeql.github.com/codeql-query-help/actions/actions-artifact-poisoning-critical/",
+      "verified_pin": {
+        "action": "actions/download-artifact",
+        "tag": "v4.1.3",
+        "sha": "87c55149d96e628cc2ef7e6fc2aab372015aec85",
+        "checked_at": "2026-11-02",
+        "source": "https://api.github.com/repos/actions/download-artifact/git/ref/tags/v4.1.3"
+      }
+    },
+    {
+      "rule_id": "CHA014",
+      "bad": "CHA014-bad.yml",
+      "good": "CHA014-good.yml",
+      "notes": "Explicitly including a hidden credential filename versus uploading one allowlisted report. Fixtures contain no credential file.",
+      "source": "https://codeql.github.com/codeql-query-help/actions/actions-secrets-in-artifacts/",
+      "verified_pin": {
+        "action": "actions/upload-artifact",
+        "tag": "v4.6.2",
+        "sha": "ea165f8d65b6e75b540449e92b4886f43607fa02",
+        "checked_at": "2026-11-02",
+        "source": "https://api.github.com/repos/actions/upload-artifact/git/ref/tags/v4.6.2"
+      }
+    },
+    {
+      "rule_id": "CHA015",
+      "bad": "CHA015-bad.yml",
+      "good": "CHA015-good.yml",
+      "notes": "An explicit writable privileged cache after untrusted PR execution versus restore-only metadata work. Current low-trust trigger defaults are read-only.",
+      "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching",
+      "verified_pin": {
+        "action": "actions/cache/restore",
+        "tag": "v4.2.4",
+        "sha": "0400d5f644dc74513175e3cd8d07132dd4860809",
+        "checked_at": "2026-11-02",
+        "source": "https://api.github.com/repos/actions/cache/git/ref/tags/v4.2.4"
+      }
+    },
+    {
+      "rule_id": "CHA016",
+      "bad": "CHA016-bad.yml",
+      "good": "CHA016-good.yml",
+      "notes": "Untrusted newlines can inject additional environment-file entries. Remove carriage returns and newlines before writing a single-line value.",
+      "source": "https://codeql.github.com/codeql-query-help/actions/actions-envvar-injection-critical/"
+    },
+    {
+      "rule_id": "CHA017",
+      "bad": "CHA017-bad.yml",
+      "good": "CHA017-good.yml",
+      "notes": "An attacker-controlled executable search directory versus an exact allowlist check against an administrator-controlled directory.",
+      "source": "https://codeql.github.com/codeql-query-help/actions/actions-envpath-injection-critical/"
+    },
+    {
+      "rule_id": "CHA018",
+      "bad": "CHA018-bad.yml",
+      "good": "CHA018-good.yml",
+      "notes": "Literal comparison text outside the expression produces a truthy string. Put the entire comparison inside one expression.",
+      "source": "https://codeql.github.com/codeql-query-help/actions/actions-if-expression-always-true-critical/"
+    },
+    {
+      "rule_id": "CHA019",
+      "bad": "CHA019-bad.yml",
+      "good": "CHA019-good.yml",
+      "notes": "String contains() permits substring identities, while membership in an explicit JSON array compares complete identities.",
+      "source": "https://docs.zizmor.sh/audits/#unsound-contains"
+    },
+    {
+      "rule_id": "CHA020",
+      "bad": "CHA020-bad.yml",
+      "good": "CHA020-good.yml",
+      "notes": "Bad uses affected exact version v4.1.2; good pins the commit mapped by the official v4.1.3 tag, verified through GitHub API. The local advisory checker does not infer release versions from unknown SHAs; the existing guard unit tests separately cover the exact v4.1.3 patch boundary. This remains limited to the curated snapshot.",
+      "source": "https://codeql.github.com/codeql-query-help/actions/actions-vulnerable-action/",
+      "verified_pin": {
+        "action": "actions/download-artifact",
+        "tag": "v4.1.3",
+        "sha": "87c55149d96e628cc2ef7e6fc2aab372015aec85",
+        "checked_at": "2026-11-02",
+        "source": "https://api.github.com/repos/actions/download-artifact/git/ref/tags/v4.1.3"
+      }
+    }
+  ]
+}

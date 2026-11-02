@@ -1,0 +1,14 @@
+# Static audit fixture; this file is never executed by the tests.
+name: Static auditor example; do not install as a workflow
+'on': issues
+permissions:
+  contents: read
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+    - env:
+        DIRECTORY: ${{ github.event.issue.body }}
+      run: |-
+        [[ "$DIRECTORY" == '/opt/demo-tools' ]] || exit 1
+        printf '%s\n' "$DIRECTORY" >> "$GITHUB_PATH"
