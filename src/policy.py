@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Explicit, local policy and conservative baselines. Never execute config."""
 
 from datetime import date, datetime, timezone

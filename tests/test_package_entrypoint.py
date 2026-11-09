@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Exercise the additional installed-package module entry point."""
 
 import json

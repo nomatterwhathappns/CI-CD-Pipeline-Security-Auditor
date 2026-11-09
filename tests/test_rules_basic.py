@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Focused unit cases for CHA004 through CHA010, without executing workflows."""
 
 import json

@@ -43,4 +43,4 @@ Catat repo, commit, workflow yang diperiksa, versi alat, hasil, dan penilaian ma
 
 ## Lisensi
 
-Kode proyek menggunakan [lisensi MIT](LICENSE). Kontribusikan hanya materi yang memang boleh Anda bagikan dengan ketentuan tersebut, dan pertahankan pemberitahuan lisensi dari komponen pihak ketiga bila relevan.
+Mulai versi 1.2.1, kode proyek menggunakan [GNU GPL versi 3 saja — GPL-3.0-only](LICENSE). Kontribusikan hanya materi yang memang boleh Anda bagikan dengan ketentuan tersebut, dan pertahankan pemberitahuan lisensi dari komponen pihak ketiga bila relevan. Riwayat versi MIT dan atribusi komponen dijelaskan pada [NOTICE.md](NOTICE.md).

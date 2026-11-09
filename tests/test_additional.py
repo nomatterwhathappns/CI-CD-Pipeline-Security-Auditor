@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Focused checks for additional rules, with no workflow execution."""
 
 from copy import deepcopy

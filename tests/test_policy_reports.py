@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """End-to-end policy behavior: exceptions must be explicit and auditable."""
 
 from contextlib import redirect_stdout

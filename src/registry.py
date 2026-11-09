@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Stable identifiers and documentation for the security rules."""
 
 SEVERITIES = {"low": 0, "medium": 1, "high": 2, "critical": 3}

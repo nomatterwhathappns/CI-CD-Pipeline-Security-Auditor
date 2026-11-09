@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Source-to-sink behavior and precision boundaries of the static flow model."""
 
 import json

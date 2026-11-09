@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """CHA004 regressions derived from public workflows, never executed.
 
 Primary provenance: cli/cli, .github/workflows/dependabot-triage.lock.yml

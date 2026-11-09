@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Bounded checks for credential handling, downloads, and container dependencies.
 
 Shell checks inspect literal POSIX commands, never execute them, and skip heredocs

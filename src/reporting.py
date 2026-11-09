@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """SARIF 2.1.0 conversion without embedding source or credential values."""
 
 import hashlib

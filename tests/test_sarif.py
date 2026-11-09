@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Check useful SARIF locations, suppressed results and scan-failure signaling."""
 
 from contextlib import redirect_stdout

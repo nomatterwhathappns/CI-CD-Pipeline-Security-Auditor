@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Independent precision cases for bounded expression/dataflow analysis.
 
 These tests exercise data as data, lexical scope, and runtime availability;

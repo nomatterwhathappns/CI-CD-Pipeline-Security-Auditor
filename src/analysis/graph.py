@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Follow local workflow/composite references within one explicit snapshot.
 
 Remote actions, JavaScript/Docker action bodies, dynamic references, and cycles

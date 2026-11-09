@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Bounded checks for trust crossings; scripts and artifacts are never executed.
 
 These checks follow known action inputs and a small set of shell patterns. They

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Reproduce the small public-workflow pilot without executing its inputs.
 
 Default operation is offline. --download explicitly retrieves only immutable

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Exercise all bad/good YAML pairs through the normal audit engine.
 
 These are static inputs, deliberately outside .github/workflows. Tests read

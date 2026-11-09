@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Bounded, source-preserving taint analysis for GitHub Actions expressions.
 
 Only recognized event data is treated as attacker controlled. Unknown values

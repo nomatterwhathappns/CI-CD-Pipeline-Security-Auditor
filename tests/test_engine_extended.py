@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Regression tests for parser safety, CLI policy and stable reports."""
 
 import io

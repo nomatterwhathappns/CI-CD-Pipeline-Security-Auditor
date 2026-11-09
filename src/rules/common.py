@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Shared, non-executing helpers used by security rules."""
 
 from dataclasses import dataclass, field

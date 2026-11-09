@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Bounded checks for unsafe runner-command opt-ins and container privileges.
 
 These checks inspect declarations only. Expressions that cannot be resolved as

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Read YAML as data and collect findings without executing workflows."""
 
 import hashlib

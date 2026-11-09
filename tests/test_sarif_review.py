@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Regression cases for portable SARIF fingerprints and unusual source paths."""
 
 from copy import deepcopy

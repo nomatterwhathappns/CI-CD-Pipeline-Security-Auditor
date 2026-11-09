@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Exercise report integration, gates, policies, and deep source identities."""
 
 from contextlib import redirect_stdout, redirect_stderr

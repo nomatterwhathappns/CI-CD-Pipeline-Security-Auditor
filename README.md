@@ -1,6 +1,6 @@
 # CI/CD Pipeline Security Auditor
 
-Auditor statis GitHub Actions berbasis Python. Versi **1.2.0** menyediakan **23 aturan CHA001–CHA023** untuk menandai konfigurasi yang perlu ditinjau sebelum workflow digunakan atau perubahan digabungkan.
+Auditor statis GitHub Actions berbasis Python. Versi **1.2.1** menyediakan **23 aturan CHA001–CHA023** untuk menandai konfigurasi yang perlu ditinjau sebelum workflow digunakan atau perubahan digabungkan.
 
 Program membaca YAML sebagai data. Isi workflow, script, action, dan artifact tidak dijalankan. Auditor dapat dipakai dari terminal atau sebagai pemeriksaan di CI.
 
@@ -27,7 +27,7 @@ cha-auditor --version
 cha-auditor /lokasi/proyek-lain/.github/workflows
 ```
 
-Paket belum dipublikasikan ke PyPI; `pip install .` memasang kode dari folder repo yang sudah diambil. Kode proyek menggunakan [lisensi MIT](LICENSE).
+Paket belum dipublikasikan ke PyPI; `pip install .` memasang kode dari folder repo yang sudah diambil. Mulai versi 1.2.1, kode proyek menggunakan [GNU GPL versi 3 saja — GPL-3.0-only](LICENSE). Versi MIT yang sudah diterbitkan tetap mempertahankan izinnya; lihat [pemberitahuan dan riwayat lisensi](NOTICE.md).
 
 Perintah lama `python3 src/auditor.py ...` tetap tersedia dari folder utama repo. Jika hanya ingin menjalankan bentuk lama tanpa memasang CLI, pasang dependensi dengan `python3 -m pip install -r requirements.txt`. Untuk mengembangkan kode, gunakan `python3 -m pip install -e .`.
 

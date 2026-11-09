@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 nomatterwhathappns
 """Static checks for conditional guards and a small, offline advisory snapshot.
 
 Advisory schema 1 uses top-level schema_version, checked_at, coverage and

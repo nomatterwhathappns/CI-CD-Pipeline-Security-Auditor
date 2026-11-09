@@ -1,5 +1,12 @@
 # Catatan perubahan
 
+## 1.2.1 — 2026-11-09
+
+- Lisensi distribusi kode proyek beralih ke GNU GPL versi 3 saja (`GPL-3.0-only`) sesuai pilihan pemilik proyek.
+- Teks GPL lengkap, pemberitahuan penerapan lisensi, metadata paket, dan panduan kontribusi diselaraskan. Pemberitahuan SPDX ditambahkan pada sumber Python.
+- Pemberitahuan MIT terdahulu dipertahankan untuk riwayat dan atribusi. Izin versi 1.1.0 dan 1.2.0 yang sudah diterbitkan tetap berlaku; perubahan ini tidak berlaku surut.
+- Kemampuan pemeriksaan dan 23 aturan tetap mengikuti versi 1.2.0.
+
 ## 1.2.0 — 2026-11-09
 
 Perluasan analisis berbasis aturan untuk menghubungkan sumber data, pemakaiannya dalam script, serta file lokal yang dipanggil workflow. Tidak ada model AI yang dipanggil saat pemindaian, dan cakupan ini belum dibandingkan dengan kemampuan umum model AI.
