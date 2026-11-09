@@ -1,0 +1,400 @@
+{
+  "schema_version": 1,
+  "collected_on": "2026-11-09",
+  "selection": "Convenience sample of seven public GitHub repositories spanning Python, JavaScript, Go, container tooling and actions. All immediate workflow YAML files returned by each directory listing were selected. Not random or representative.",
+  "files": [
+    {
+      "repo": "pallets/flask",
+      "path": ".github/workflows/lock.yaml",
+      "sha": "5296b963423cf84231a7ee8273e86b05411d1b25",
+      "size": 741,
+      "source": "https://api.github.com/repos/pallets/flask/git/blobs/5296b963423cf84231a7ee8273e86b05411d1b25"
+    },
+    {
+      "repo": "pallets/flask",
+      "path": ".github/workflows/pre-commit.yaml",
+      "sha": "15ed3adf5133582156668636c6c43a4e640893a7",
+      "size": 1074,
+      "source": "https://api.github.com/repos/pallets/flask/git/blobs/15ed3adf5133582156668636c6c43a4e640893a7"
+    },
+    {
+      "repo": "pallets/flask",
+      "path": ".github/workflows/publish.yaml",
+      "sha": "8b77a54f7a9090912c2fc4bfae45f79c392bf447",
+      "size": 2041,
+      "source": "https://api.github.com/repos/pallets/flask/git/blobs/8b77a54f7a9090912c2fc4bfae45f79c392bf447"
+    },
+    {
+      "repo": "pallets/flask",
+      "path": ".github/workflows/tests.yaml",
+      "sha": "a8991315db27b7f04399f0993b015f9cc91df453",
+      "size": 2367,
+      "source": "https://api.github.com/repos/pallets/flask/git/blobs/a8991315db27b7f04399f0993b015f9cc91df453"
+    },
+    {
+      "repo": "pallets/flask",
+      "path": ".github/workflows/zizmor.yaml",
+      "sha": "7f19a32eb4df0974062ed9afe2e95c16acfdc182",
+      "size": 654,
+      "source": "https://api.github.com/repos/pallets/flask/git/blobs/7f19a32eb4df0974062ed9afe2e95c16acfdc182"
+    },
+    {
+      "repo": "pypa/pip",
+      "path": ".github/workflows/check-pr-template.yml",
+      "sha": "bd195f9635c867f08eed4b6ade64a479b5b484e0",
+      "size": 752,
+      "source": "https://api.github.com/repos/pypa/pip/git/blobs/bd195f9635c867f08eed4b6ade64a479b5b484e0"
+    },
+    {
+      "repo": "pypa/pip",
+      "path": ".github/workflows/ci.yml",
+      "sha": "2218e1bb4fbcf44bc4d5abef3ca0ba4f23273806",
+      "size": 10892,
+      "source": "https://api.github.com/repos/pypa/pip/git/blobs/2218e1bb4fbcf44bc4d5abef3ca0ba4f23273806"
+    },
+    {
+      "repo": "pypa/pip",
+      "path": ".github/workflows/lock-threads.yml",
+      "sha": "43ed04c4cd2b5d495db312faed6d1e5ad17bd88c",
+      "size": 454,
+      "source": "https://api.github.com/repos/pypa/pip/git/blobs/43ed04c4cd2b5d495db312faed6d1e5ad17bd88c"
+    },
+    {
+      "repo": "pypa/pip",
+      "path": ".github/workflows/release.yml",
+      "sha": "0de482354c10b39036c5c7e1c91d6dbb65ccfd47",
+      "size": 1559,
+      "source": "https://api.github.com/repos/pypa/pip/git/blobs/0de482354c10b39036c5c7e1c91d6dbb65ccfd47"
+    },
+    {
+      "repo": "pypa/pip",
+      "path": ".github/workflows/update-build-project-lock.yml",
+      "sha": "ada84e0f65e14e9915063f8c1f155312eef300fa",
+      "size": 2189,
+      "source": "https://api.github.com/repos/pypa/pip/git/blobs/ada84e0f65e14e9915063f8c1f155312eef300fa"
+    },
+    {
+      "repo": "pypa/pip",
+      "path": ".github/workflows/update-rtd-redirects.yml",
+      "sha": "b52c222bbe9b1a42deb9841b222f03d7b1b00083",
+      "size": 885,
+      "source": "https://api.github.com/repos/pypa/pip/git/blobs/b52c222bbe9b1a42deb9841b222f03d7b1b00083"
+    },
+    {
+      "repo": "psf/requests",
+      "path": ".github/workflows/close-issues.yml",
+      "sha": "15beb67b46fb52c2b6ed8c3e9da4e3ad530ef69e",
+      "size": 1165,
+      "source": "https://api.github.com/repos/psf/requests/git/blobs/15beb67b46fb52c2b6ed8c3e9da4e3ad530ef69e"
+    },
+    {
+      "repo": "psf/requests",
+      "path": ".github/workflows/codeql-analysis.yml",
+      "sha": "d7ceaf6bec192d869a46315b0f96fe9aef0f2cdf",
+      "size": 2672,
+      "source": "https://api.github.com/repos/psf/requests/git/blobs/d7ceaf6bec192d869a46315b0f96fe9aef0f2cdf"
+    },
+    {
+      "repo": "psf/requests",
+      "path": ".github/workflows/lint.yml",
+      "sha": "9d968108ff76d7c014afddb52896ce9d8c02c2ca",
+      "size": 588,
+      "source": "https://api.github.com/repos/psf/requests/git/blobs/9d968108ff76d7c014afddb52896ce9d8c02c2ca"
+    },
+    {
+      "repo": "psf/requests",
+      "path": ".github/workflows/lock-issues.yml",
+      "sha": "210427285167e466bbef03c5057bf5dc32893660",
+      "size": 389,
+      "source": "https://api.github.com/repos/psf/requests/git/blobs/210427285167e466bbef03c5057bf5dc32893660"
+    },
+    {
+      "repo": "psf/requests",
+      "path": ".github/workflows/publish.yml",
+      "sha": "56bb9cff1ca3e462188bf83b09a3b565e3e33d22",
+      "size": 2495,
+      "source": "https://api.github.com/repos/psf/requests/git/blobs/56bb9cff1ca3e462188bf83b09a3b565e3e33d22"
+    },
+    {
+      "repo": "psf/requests",
+      "path": ".github/workflows/run-tests.yml",
+      "sha": "b795c78c1e4177bdec68c55facefd4996ef90a65",
+      "size": 2305,
+      "source": "https://api.github.com/repos/psf/requests/git/blobs/b795c78c1e4177bdec68c55facefd4996ef90a65"
+    },
+    {
+      "repo": "psf/requests",
+      "path": ".github/workflows/typecheck.yml",
+      "sha": "45f03068eeed9d6777556ec0acef8a2047dc0684",
+      "size": 736,
+      "source": "https://api.github.com/repos/psf/requests/git/blobs/45f03068eeed9d6777556ec0acef8a2047dc0684"
+    },
+    {
+      "repo": "psf/requests",
+      "path": ".github/workflows/zizmor.yml",
+      "sha": "59dce008f1cc14a8f88891ce3f69b18c9720e4f3",
+      "size": 592,
+      "source": "https://api.github.com/repos/psf/requests/git/blobs/59dce008f1cc14a8f88891ce3f69b18c9720e4f3"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/acceptance.yml",
+      "sha": "79b222c7a14db87647ee63db3a6a9fc7eab22f0a",
+      "size": 2024,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/79b222c7a14db87647ee63db3a6a9fc7eab22f0a"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/agentics-maintenance.yml",
+      "sha": "c124cf58bfd428850588e36ef4cb8587a74043b5",
+      "size": 30559,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/c124cf58bfd428850588e36ef4cb8587a74043b5"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/bump-go.yml",
+      "sha": "c0f65d6fbee9c5715313acbe9b5b1530c5a9ff87",
+      "size": 1093,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/c0f65d6fbee9c5715313acbe9b5b1530c5a9ff87"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/codeql.yml",
+      "sha": "7c7fcc07d2015c03509495053cd5c93e870a34eb",
+      "size": 2489,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/7c7fcc07d2015c03509495053cd5c93e870a34eb"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/copilot-setup-steps.yml",
+      "sha": "cd72402cf0129d95544113a2d10dc5da1c7c8aae",
+      "size": 868,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/cd72402cf0129d95544113a2d10dc5da1c7c8aae"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/dependabot-triage-schedule.yml",
+      "sha": "5e04cc83b32050b7fdd53d6c55e74fbe276e3566",
+      "size": 1284,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/5e04cc83b32050b7fdd53d6c55e74fbe276e3566"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/dependabot-triage.lock.yml",
+      "sha": "4353c564892e9a2bd9290abb25e0fde83783fb7b",
+      "size": 144901,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/4353c564892e9a2bd9290abb25e0fde83783fb7b"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/deployment.yml",
+      "sha": "5d5627a695ab3059306eb2556742ccd46c4d58df",
+      "size": 20216,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/5d5627a695ab3059306eb2556742ccd46c4d58df"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/go.yml",
+      "sha": "33b085bf49fa58fb1edb924cfefebfc89962836e",
+      "size": 1676,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/33b085bf49fa58fb1edb924cfefebfc89962836e"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/govulncheck.yml",
+      "sha": "25a062e6381515c7456e815d9b697060660c7bd5",
+      "size": 1166,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/25a062e6381515c7456e815d9b697060660c7bd5"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/issue-triage.lock.yml",
+      "sha": "a9e505555f720773157a217c20fe34ab61b8c41a",
+      "size": 166235,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/a9e505555f720773157a217c20fe34ab61b8c41a"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/lint.yml",
+      "sha": "82ac537ec754a9d111dbc11ac307af8103609d77",
+      "size": 2951,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/82ac537ec754a9d111dbc11ac307af8103609d77"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/triage-issues.yml",
+      "sha": "2d82dfc66637965634ebe27123aa29ab1014edaf",
+      "size": 2230,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/2d82dfc66637965634ebe27123aa29ab1014edaf"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/triage-pull-requests.yml",
+      "sha": "ad8f8f12ef937c74eae2c497bdd9913e9daf36d2",
+      "size": 2567,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/ad8f8f12ef937c74eae2c497bdd9913e9daf36d2"
+    },
+    {
+      "repo": "cli/cli",
+      "path": ".github/workflows/triage-scheduled-tasks.yml",
+      "sha": "9ede40fd9a94ef629aa3bc5774da805053adfccc",
+      "size": 1306,
+      "source": "https://api.github.com/repos/cli/cli/git/blobs/9ede40fd9a94ef629aa3bc5774da805053adfccc"
+    },
+    {
+      "repo": "expressjs/express",
+      "path": ".github/workflows/ci.yml",
+      "sha": "f627dda88dd381a4d4029e1266cd192bc6a95603",
+      "size": 3230,
+      "source": "https://api.github.com/repos/expressjs/express/git/blobs/f627dda88dd381a4d4029e1266cd192bc6a95603"
+    },
+    {
+      "repo": "expressjs/express",
+      "path": ".github/workflows/codeql.yml",
+      "sha": "dac61cd0243f1113ad3db13888688bd26c35b1e7",
+      "size": 2654,
+      "source": "https://api.github.com/repos/expressjs/express/git/blobs/dac61cd0243f1113ad3db13888688bd26c35b1e7"
+    },
+    {
+      "repo": "expressjs/express",
+      "path": ".github/workflows/legacy.yml",
+      "sha": "985a027a10b73ae514569b414ecaaf04b1bb6dda",
+      "size": 2748,
+      "source": "https://api.github.com/repos/expressjs/express/git/blobs/985a027a10b73ae514569b414ecaaf04b1bb6dda"
+    },
+    {
+      "repo": "expressjs/express",
+      "path": ".github/workflows/npm-publish.yml",
+      "sha": "450588922951d9037db810886b28b88aee7fd2fd",
+      "size": 2826,
+      "source": "https://api.github.com/repos/expressjs/express/git/blobs/450588922951d9037db810886b28b88aee7fd2fd"
+    },
+    {
+      "repo": "expressjs/express",
+      "path": ".github/workflows/scorecard.yml",
+      "sha": "b1e0bb992eeed15483d59df0e7c9a5117c32be8e",
+      "size": 2981,
+      "source": "https://api.github.com/repos/expressjs/express/git/blobs/b1e0bb992eeed15483d59df0e7c9a5117c32be8e"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/build.yml",
+      "sha": "1153d344778e7e1cecbb0036000c6384dc3ef4e0",
+      "size": 16186,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/1153d344778e7e1cecbb0036000c6384dc3ef4e0"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/codeql.yml",
+      "sha": "4054813f5b5456e2d6a2a66773e3658e9eb71e28",
+      "size": 1140,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/4054813f5b5456e2d6a2a66773e3658e9eb71e28"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/docs-release.yml",
+      "sha": "fe53ccbdb56b4ade01c1dab8948c53614af63b8d",
+      "size": 2845,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/fe53ccbdb56b4ade01c1dab8948c53614af63b8d"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/docs-upstream.yml",
+      "sha": "0610af1c0c630956dd0364f8c3bc7da984feed02",
+      "size": 2080,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/0610af1c0c630956dd0364f8c3bc7da984feed02"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/e2e.yml",
+      "sha": "288adcd3f1547b07240654946b74ce41b1f5ef42",
+      "size": 7959,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/288adcd3f1547b07240654946b74ce41b1f5ef42"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/labeler.yml",
+      "sha": "31ed3cf05e318b4111ce04ff2e43fef2eeaf330b",
+      "size": 652,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/31ed3cf05e318b4111ce04ff2e43fef2eeaf330b"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/pr-assign-author.yml",
+      "sha": "eb9f64a8905a010f05efe62fa2136342f81abca2",
+      "size": 518,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/eb9f64a8905a010f05efe62fa2136342f81abca2"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/update-deps.yml",
+      "sha": "8471712b7423a00c66c79e78159e2981cf410aba",
+      "size": 18931,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/8471712b7423a00c66c79e78159e2981cf410aba"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/validate.yml",
+      "sha": "a8403db9661aad33a9c2cf492ffaf8f5ddea5cd0",
+      "size": 1633,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/a8403db9661aad33a9c2cf492ffaf8f5ddea5cd0"
+    },
+    {
+      "repo": "docker/buildx",
+      "path": ".github/workflows/zizmor.yml",
+      "sha": "5b2071c9be42b0905ce4183d3d3b86f222b10b59",
+      "size": 591,
+      "source": "https://api.github.com/repos/docker/buildx/git/blobs/5b2071c9be42b0905ce4183d3d3b86f222b10b59"
+    },
+    {
+      "repo": "actions/checkout",
+      "path": ".github/workflows/check-dist.yml",
+      "sha": "cba4de0d06879202c9f40784154de7477b3aba8d",
+      "size": 1370,
+      "source": "https://api.github.com/repos/actions/checkout/git/blobs/cba4de0d06879202c9f40784154de7477b3aba8d"
+    },
+    {
+      "repo": "actions/checkout",
+      "path": ".github/workflows/codeql-analysis.yml",
+      "sha": "d3fc1a0755d55507fb5cd48abd019a70559bceea",
+      "size": 1939,
+      "source": "https://api.github.com/repos/actions/checkout/git/blobs/d3fc1a0755d55507fb5cd48abd019a70559bceea"
+    },
+    {
+      "repo": "actions/checkout",
+      "path": ".github/workflows/licensed.yml",
+      "sha": "3d55d03addc31734281618814f14a1c7b1de3697",
+      "size": 245,
+      "source": "https://api.github.com/repos/actions/checkout/git/blobs/3d55d03addc31734281618814f14a1c7b1de3697"
+    },
+    {
+      "repo": "actions/checkout",
+      "path": ".github/workflows/publish-immutable-actions.yml",
+      "sha": "22db0b79ba1c24d0dce3afff1ee63ab0b27d26c1",
+      "size": 376,
+      "source": "https://api.github.com/repos/actions/checkout/git/blobs/22db0b79ba1c24d0dce3afff1ee63ab0b27d26c1"
+    },
+    {
+      "repo": "actions/checkout",
+      "path": ".github/workflows/test.yml",
+      "sha": "4740daf61ce83d28dccbb7a51a2f5f13811169bd",
+      "size": 9656,
+      "source": "https://api.github.com/repos/actions/checkout/git/blobs/4740daf61ce83d28dccbb7a51a2f5f13811169bd"
+    },
+    {
+      "repo": "actions/checkout",
+      "path": ".github/workflows/update-main-version.yml",
+      "sha": "0bbb121c79c70cc14c3721ffad59c5145930744e",
+      "size": 1127,
+      "source": "https://api.github.com/repos/actions/checkout/git/blobs/0bbb121c79c70cc14c3721ffad59c5145930744e"
+    },
+    {
+      "repo": "actions/checkout",
+      "path": ".github/workflows/update-test-ubuntu-git.yml",
+      "sha": "f8abd9e33ef6d6ee030d145a0e2b4df5ad108f20",
+      "size": 2259,
+      "source": "https://api.github.com/repos/actions/checkout/git/blobs/f8abd9e33ef6d6ee030d145a0e2b4df5ad108f20"
+    }
+  ]
+}
+

@@ -1,0 +1,10 @@
+# Static audit fixture; do not install as an executable workflow.
+name: Environment file example
+'on': push
+permissions:
+  contents: read
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "REPORT_NAME=example" >> "$GITHUB_ENV"

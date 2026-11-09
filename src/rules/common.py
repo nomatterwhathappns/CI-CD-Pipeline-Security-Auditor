@@ -137,6 +137,29 @@ class RuleContext:
                 result.update(env)
         return result
 
+    def source_location(self, job=None, step=None):
+        """Return the enclosing YAML scope start, not a shell-token position.
+
+        An alias keeps its anchor's position. Synthetic dictionaries provided
+        directly to RuleContext have no source mark and fall back to 1:1.
+        """
+        scope, kind = self.workflow, "workflow"
+        if job is not None:
+            jobs = self.workflow.get("jobs", {})
+            candidate = jobs.get(job) if isinstance(jobs, dict) else None
+            if isinstance(candidate, dict):
+                scope, kind = candidate, "job"
+                steps = candidate.get("steps", [])
+                if (isinstance(step, int) and not isinstance(step, bool)
+                        and isinstance(steps, list) and 1 <= step <= len(steps)
+                        and isinstance(steps[step - 1], dict)):
+                    scope, kind = steps[step - 1], "step"
+        return {
+            "line": getattr(scope, "source_line", 1),
+            "column": getattr(scope, "source_column", 1),
+            "location_scope": kind,
+        }
+
     def emit(self, rule_id, message, *, job=None, step=None, confidence="high", **extra):
         if rule_id in self.ignored:
             return
@@ -152,6 +175,8 @@ class RuleContext:
             "severity": rule["severity"],
             "confidence": confidence,
             "remediation": rule["remediation"],
+            "source_digest": getattr(self.workflow, "source_digest", None),
+            **self.source_location(job, step),
         }
         finding.update(extra)
         self.findings.append(finding)

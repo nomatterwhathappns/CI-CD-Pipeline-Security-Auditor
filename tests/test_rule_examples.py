@@ -1,4 +1,4 @@
-"""Exercise the twenty bad/good YAML pairs through the normal audit engine.
+"""Exercise all bad/good YAML pairs through the normal audit engine.
 
 These are static inputs, deliberately outside .github/workflows. Tests read
 workflow files as data and never run commands or invoke referenced actions.
@@ -14,7 +14,7 @@ from src.registry import RULES, SEVERITIES
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "fixtures" / "rules"
 MANIFEST = json.loads((EXAMPLES / "manifest.json").read_text(encoding="utf-8"))
-EXPECTED_IDS = {f"CHA{number:03d}" for number in range(1, 21)}
+EXPECTED_IDS = {f"CHA{number:03d}" for number in range(1, 23)}
 FAKE_CREDENTIAL = "DEMO_ONLY_NOT_A_REAL_SECRET"
 
 
@@ -24,7 +24,7 @@ class TestRuleExamples(unittest.TestCase):
         self.assertEqual(MANIFEST["schema_version"], 1)
         self.assertEqual(set(RULES), EXPECTED_IDS)
         self.assertEqual({entry["rule_id"] for entry in entries}, EXPECTED_IDS)
-        self.assertEqual(len(entries), 20)
+        self.assertEqual(len(entries), len(RULES))
         expected_files = set()
         for entry in entries:
             rule_id = entry["rule_id"]

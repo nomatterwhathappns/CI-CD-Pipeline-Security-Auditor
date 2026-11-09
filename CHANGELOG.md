@@ -1,5 +1,31 @@
 # Catatan perubahan
 
+## 1.1.0 — 2026-11-09
+
+Perbaikan akurasi dan alat penerapan bertahap untuk GitHub Actions. Status versi ini tetap cocok untuk uji coba dengan peninjauan manusia; kelulusan tes belum mengukur akurasi pada seluruh repo nyata.
+
+### Pemeriksaan dan lokasi
+
+- CHA001 mengenali referensi repo sendiri `$/...` yang mengikuti commit workflow berjalan, sehingga bentuk tersebut tidak diperingatkan sebagai referensi remote tanpa SHA.
+- CHA004 mengenali tiga bentuk metadata gh-aw secara terbatas, berdasarkan sepuluh peringatan keliru pada uji workflow publik; nilai kandidat lain tetap diperiksa.
+- Lokasi `line` dan `column` membantu menavigasi scope workflow, job, atau langkah yang menghasilkan temuan. Lokasi menunjuk ke awal scope; belum selalu tepat pada token penyebab.
+- CHA021 memeriksa opt-in environment untuk workflow command yang tidak aman. CHA022 menandai mode privileged eksplisit pada container job atau service. Lihat panduan aturan tambahan untuk bentuk yang didukung dan batasnya.
+
+### Pemakaian dan kebijakan
+
+- Paket lokal dapat dipasang dengan `pip install .`; perintah `cha-auditor` disediakan, data advisory ikut terpasang, dan entry point lama tetap tersedia.
+- Laporan SARIF melengkapi laporan teks dan JSON. Pembuatan file tidak otomatis mengunggah laporan ke GitHub Code Scanning.
+- Konfigurasi JSON eksplisit menyediakan pengabaian aturan serta pengecualian berdasarkan aturan, pola file, job, dan langkah, disertai alasan serta kedaluwarsa. Pengecualian kedaluwarsa adalah kesalahan kebijakan.
+- Baseline dapat ditulis dan dimuat secara eksplisit. Temuan lama tetap terlihat, sementara gate dapat difokuskan pada temuan baru. Baseline perlu peninjauan dan tidak diperbarui otomatis.
+- Panduan pemasangan, penerapan dalam tim, kontribusi, dan pelaporan keamanan ditambahkan. Kode proyek menggunakan lisensi MIT yang disertakan dalam paket distribusi.
+
+### Evaluasi awal
+
+- 56 workflow dari tujuh repo publik diverifikasi memakai Git blob SHA dan berhasil dipindai tanpa kesalahan pembacaan. Sepuluh peringatan metadata yang keliru diperbaiki; 26 peringatan konfigurasi tetap memerlukan peninjauan.
+- Manifest, ringkasan hasil, dan script evaluasi yang dapat dijalankan ulang disediakan. Sampel digunakan untuk pengembangan perbaikan ini dan belum menjadi pengukuran akurasi independen atau kelengkapan deteksi.
+
+Snapshot advisory tetap terbatas pada tiga entri offline yang diperiksa pada 2026-11-02. Perubahan ini tidak menambahkan pemantauan kerentanan otomatis, verifikasi GitHub lockfile, atau analisis lengkap script dan dependensi action.
+
 ## 1.0.0 — 2026-11-02
 
 Rilis dengan 20 aturan statis untuk konfigurasi GitHub Actions, laporan teks dan JSON, serta pemeriksaan otomatis di CI.

@@ -1,0 +1,12 @@
+# Static audit fixture; do not install as an executable workflow.
+name: Unsafe command opt-in example
+'on': push
+permissions:
+  contents: read
+env:
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Static example"

@@ -1,10 +1,10 @@
 # Panduan aturan CHA001–CHA020
 
-Auditor ini membaca workflow GitHub Actions sebagai data, lalu mencari 20 pola yang perlu ditinjau. Auditor tidak menjalankan workflow, mengunduh action, membaca isi artifact, atau mencoba kredensial. Pemeriksaannya berupa heuristik statis yang terfokus; cakupannya tidak mencakup semua kerentanan GitHub Actions.
+Dokumen ini menjelaskan 20 aturan awal CHA001–CHA020. Versi 1.1.0 menyediakan 22 aturan; dua pemeriksaan tambahan dijelaskan dalam [panduan CHA021–CHA022](ADDITIONAL_RULES.md). Auditor membaca workflow GitHub Actions sebagai data, lalu mencari pola yang perlu ditinjau. Auditor tidak menjalankan workflow, mengunduh action, membaca isi artifact, atau mencoba kredensial. Pemeriksaannya berupa heuristik statis yang terfokus; cakupannya tidak mencakup semua kerentanan GitHub Actions.
 
 Definisi ID, judul, tingkat risiko, saran perbaikan, dan sumber aturan ada di [registry](../src/registry.py). Contoh YAML ada di [manifest contoh](../fixtures/rules/manifest.json). Setiap aturan mempunyai contoh `bad` dan `good` yang diperiksa melalui pembaca workflow yang sama dengan CLI.
 
-Dalam panduan ini, **contoh baik memperlihatkan alternatif untuk aturan yang sedang dibahas**. Pengujian juga memastikan seluruh contoh baik tidak menghasilkan temuan ketika semua 20 aturan aktif. Hasil ini tetap terbatas pada heuristik dan snapshot yang tersedia. Semua contoh berada di luar `.github/workflows` dan tidak dijalankan oleh pengujian. Kandidat password/token dalam contoh menggunakan penanda `DEMO_ONLY_NOT_A_REAL_SECRET`; nilainya tidak disalin ke laporan temuan CHA004/CHA010. Domain pada contoh unduhan CHA007 dan digest image pada CHA009/CHA010 bersifat ilustratif; pilih sumber dan digest nyata yang telah ditinjau sebelum digunakan.
+Dalam panduan ini, **contoh baik memperlihatkan alternatif untuk aturan yang sedang dibahas**. Pengujian juga memastikan seluruh contoh baik tidak menghasilkan temuan ketika seluruh aturan versi saat ini aktif. Hasil ini tetap terbatas pada heuristik dan snapshot yang tersedia. Semua contoh berada di luar `.github/workflows` dan tidak dijalankan oleh pengujian. Kandidat password/token dalam contoh menggunakan penanda `DEMO_ONLY_NOT_A_REAL_SECRET`; nilainya tidak disalin ke laporan temuan CHA004/CHA010. Domain pada contoh unduhan CHA007 dan digest image pada CHA009/CHA010 bersifat ilustratif; pilih sumber dan digest nyata yang telah ditinjau sebelum digunakan.
 
 ## Membaca temuan dan batas pemeriksaan
 
@@ -65,7 +65,7 @@ python3 -m src.auditor .github/workflows --ignore CHA001,CHA005 --format json
 
 **Yang diperiksa dan alasannya.** Referensi remote pada `steps[].uses` dan pemanggilan reusable workflow sebaiknya menunjuk ke commit yang telah ditinjau. Tag seperti `@v4` atau branch seperti `@main` dapat berpindah ke kode lain.
 
-**Batas deteksi.** Pemeriksa menerima bentuk 40 karakter heksadesimal sebagai SHA lengkap. Auditor tidak membuktikan bahwa commit itu ada, berasal dari maintainer yang benar, atau bebas kerentanan. Action lokal dengan awalan `./` dilewati; image `docker://` diperiksa oleh CHA009.
+**Batas deteksi.** Pemeriksa menerima bentuk 40 karakter heksadesimal sebagai SHA lengkap. Auditor tidak membuktikan bahwa commit itu ada, berasal dari maintainer yang benar, atau bebas kerentanan. Action lokal dengan awalan `./` dan referensi repo sendiri `$/...` dilewati; bentuk `$/...` mengikuti commit workflow yang berjalan. Image `docker://` diperiksa oleh CHA009. Auditor belum memverifikasi lockfile GitHub, daftar workflow yang dicakupnya, atau penerapan kebijakannya. Karena itu, referensi tag yang memang dikunci oleh lockfile masih dapat memicu CHA001. Tinjau bukti kebijakan tersebut sebelum memberi pengecualian terarah; keberadaan file lockfile saja tidak membuktikan bahwa semua referensi dilindungi.
 
 **Alternatif yang lebih aman.** Gunakan SHA lengkap dari commit yang telah ditinjau dan siapkan proses pembaruan. SHA yang diketahui berbahaya masih dapat memicu CHA020.
 
@@ -96,6 +96,8 @@ Contoh: [bermasalah](../fixtures/rules/CHA003-bad.yml) · [baik untuk aturan ini
 **Yang diperiksa dan alasannya.** Nama variabel seperti `PASSWORD`, `DEPLOY_TOKEN`, atau `API_KEY` dengan nilai literal dapat menunjukkan kredensial yang tersimpan dalam repository.
 
 **Batas deteksi.** Pemeriksa memakai pola nama dan bentuk nilai, bukan pengujian apakah token benar-benar aktif. Nilai demonstrasi juga dapat memicu aturan. Nilai kosong, referensi ekspresi/variabel yang dikenali, dan nama deskriptif seperti `PRIVATE_KEY_FILE` dilewati. Pemeriksaan ini tidak mencari seluruh jenis secret dalam semua file. Laporan menyebut lokasi dan nama variabel, bukan nilai kandidatnya.
+
+Versi 1.1.0 juga mengenali metadata gh-aw yang ditemukan dalam [uji workflow publik](FIELD_PILOT.md): `GH_AW_SECRET_NAMES` dengan minimal dua identifier environment huruf besar dipisahkan koma tanpa spasi/baris baru, `GH_AW_GITHUB_TOKEN_SOURCE` bernilai persis `app`, dan `GH_AW_TOKEN_USAGE_SUMMARY_TITLE` bernilai persis `Threat Detection Token Usage`. Pengecualian dibatasi pada bentuk tersebut; nama mirip dan nilai lainnya tetap diperiksa.
 
 **Alternatif yang lebih aman.** Gunakan GitHub Secrets atau penyedia kredensial yang sesuai. Jika nilai nyata pernah terpapar, pindahkan penyimpanannya dan rotasi kredensial tersebut.
 

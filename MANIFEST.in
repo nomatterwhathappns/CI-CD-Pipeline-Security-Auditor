@@ -1,0 +1,8 @@
+include README.md CHANGELOG.md CONTRIBUTING.md SECURITY.md LICENSE requirements.txt
+recursive-include docs *.md *.json
+recursive-include fixtures *.json *.yml *.yaml
+recursive-include tests test_*.py
+recursive-include scripts *.py
+recursive-include evaluation *.json
+global-exclude *.py[cod]
+prune reports

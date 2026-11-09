@@ -1,4 +1,4 @@
-"""Stable identifiers and documentation for the twenty security rules."""
+"""Stable identifiers and documentation for the security rules."""
 
 SEVERITIES = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 
@@ -63,6 +63,13 @@ _SPECS = [
     ("CHA020", "Action matches a bundled security advisory", "high",
      "Read the linked advisory and update to a reviewed fixed release/commit. Keep advisory data current.",
      "https://codeql.github.com/codeql-query-help/actions/actions-vulnerable-action/"),
+
+    ("CHA021", "Unsafe legacy workflow commands enabled", "high",
+     "Remove ACTIONS_ALLOW_UNSECURE_COMMANDS and use GITHUB_ENV/GITHUB_PATH with validated values.",
+     "https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionCommandManager.cs"),
+    ("CHA022", "Privileged job or service container", "high",
+     "Review runner isolation and replace privileged mode with only required capabilities where possible.",
+     "https://docs.docker.com/reference/cli/docker/container/run/#escalate-container-privileges---privileged"),
 ]
 
 RULES = {

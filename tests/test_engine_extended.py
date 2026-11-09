@@ -221,11 +221,11 @@ class TestExtendedEngine(unittest.TestCase):
                 main(["--ignore", "CHA999"])
         self.assertEqual(caught.exception.code, 2)
 
-    def test_rule_listing_has_exactly_twenty_unique_ids(self):
+    def test_rule_listing_has_all_unique_ids(self):
         status, report = self.cli("--list-rules", "--format", "json")
         self.assertEqual(status, 0)
         self.assertEqual({rule["rule_id"] for rule in report["rules"]}, set(RULES))
-        self.assertEqual(len(report["rules"]), 20)
+        self.assertEqual(len(report["rules"]), len(RULES))
 
     def test_empty_directory_and_wrong_extension_fail_closed(self):
         status, report = self.cli(self.folder, "--format", "json")
@@ -271,7 +271,7 @@ class TestExtendedEngine(unittest.TestCase):
             cwd=ROOT, capture_output=True, text=True, timeout=10, check=False,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(len(json.loads(result.stdout)["rules"]), 20)
+        self.assertEqual(len(json.loads(result.stdout)["rules"]), len(RULES))
 
     @unittest.skipUnless(os.name == "posix", "Non-UTF8 filesystem names are POSIX-specific")
     def test_non_utf8_filename_does_not_break_json_or_text(self):

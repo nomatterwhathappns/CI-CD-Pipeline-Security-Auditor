@@ -1,0 +1,96 @@
+{
+  "auditor_version": "1.1.0",
+  "generated_at": "2026-11-09T07:12:07.258173+00:00",
+  "files_expected": 56,
+  "files_verified": 56,
+  "files_scanned": 56,
+  "findings_count": 26,
+  "rule_counts": {
+    "CHA001": 22,
+    "CHA009": 4
+  },
+  "repositories": {
+    "pallets/flask": {
+      "files_scanned": 5,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "pypa/pip": {
+      "files_scanned": 6,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "psf/requests": {
+      "files_scanned": 8,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "cli/cli": {
+      "files_scanned": 15,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "expressjs/express": {
+      "files_scanned": 5,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "docker/buildx": {
+      "files_scanned": 10,
+      "findings_count": 1,
+      "rule_counts": {
+        "CHA001": 1
+      }
+    },
+    "actions/checkout": {
+      "files_scanned": 7,
+      "findings_count": 25,
+      "rule_counts": {
+        "CHA001": 21,
+        "CHA009": 4
+      }
+    }
+  },
+  "errors": [],
+  "interpretation": "Compatibility and pattern-review pilot, not a representative accuracy or exploitability measurement.",
+  "evaluation_type": "development compatibility pilot; fixes were developed on this sample; not an independent validation set",
+  "before_metadata_correction": {
+    "findings_count": 36,
+    "rule_counts": {
+      "CHA001": 22,
+      "CHA004": 10,
+      "CHA009": 4
+    }
+  },
+  "reviewed_false_positives": [
+    {
+      "repo": "cli/cli",
+      "rule_id": "CHA004",
+      "field": "GH_AW_SECRET_NAMES",
+      "occurrences": 6,
+      "interpretation": "Comma-separated names of environment variables, not their secret values."
+    },
+    {
+      "repo": "cli/cli",
+      "rule_id": "CHA004",
+      "field": "GH_AW_TOKEN_USAGE_SUMMARY_TITLE",
+      "occurrences": 2,
+      "interpretation": "Threat Detection Token Usage is a display label."
+    },
+    {
+      "repo": "cli/cli",
+      "rule_id": "CHA004",
+      "field": "GH_AW_GITHUB_TOKEN_SOURCE",
+      "occurrences": 2,
+      "interpretation": "app identifies the credential provider, not the credential."
+    }
+  ],
+  "limitations": [
+    "Convenience sample, not representative or random.",
+    "No exhaustive vulnerability ground truth; false negatives and detection recall were not measured.",
+    "Remaining warnings are policy/configuration review signals, not confirmed exploitable vulnerabilities.",
+    "Only CHA001, CHA004 and CHA009 produced warnings before correction; real-world effectiveness of the other nineteen checks was not established by this sample.",
+    "The sample was used to develop the CHA004 fix, so improved counts are not independent evidence of generalization.",
+    "Referenced action implementations, nested workflows and repository settings were not audited."
+  ]
+}

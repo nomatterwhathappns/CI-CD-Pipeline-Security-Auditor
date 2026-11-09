@@ -169,6 +169,20 @@
         "checked_at": "2026-11-02",
         "source": "https://api.github.com/repos/actions/download-artifact/git/ref/tags/v4.1.3"
       }
+    },
+    {
+      "rule_id": "CHA021",
+      "bad": "CHA021-bad.yml",
+      "good": "CHA021-good.yml",
+      "source": "https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionCommandManager.cs",
+      "notes": "Effective true legacy workflow-command opt-in versus environment-file use; inherited overrides are respected."
+    },
+    {
+      "rule_id": "CHA022",
+      "bad": "CHA022-bad.yml",
+      "good": "CHA022-good.yml",
+      "source": "https://docs.docker.com/reference/cli/docker/container/run/#escalate-container-privileges---privileged",
+      "notes": "Literal privileged Docker option versus reduced capabilities; image digest is illustrative, not verified."
     }
   ]
 }

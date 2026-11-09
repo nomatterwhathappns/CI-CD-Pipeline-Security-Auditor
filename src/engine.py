@@ -1,5 +1,6 @@
 """Read YAML as data and collect findings without executing workflows."""
 
+import hashlib
 import re
 from pathlib import Path
 
@@ -14,6 +15,15 @@ JOB_ID = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
 
 class AuditError(ValueError):
     """An input error whose message is safe to include in a report."""
+
+
+class SourceMapping(dict):
+    """YAML mapping with a source position kept outside its data keys."""
+
+    def __init__(self, line, column):
+        super().__init__()
+        self.source_line = line
+        self.source_column = column
 
 
 class WorkflowLoader(yaml.SafeLoader):
@@ -57,6 +67,17 @@ class WorkflowLoader(yaml.SafeLoader):
         return mapping
 
 
+def _construct_source_mapping(loader, node):
+    # Yield before constructing children, as SafeLoader does, so ordinary
+    # anchors (including recursive aliases) retain their original semantics.
+    mapping = SourceMapping(node.start_mark.line + 1, node.start_mark.column + 1)
+    yield mapping
+    mapping.update(loader.construct_mapping(node))
+
+
+WorkflowLoader.add_constructor(
+    "tag:yaml.org,2002:map", _construct_source_mapping
+)
 WorkflowLoader.yaml_implicit_resolvers = {
     key: [(tag, pattern) for tag, pattern in resolvers
           if tag not in {"tag:yaml.org,2002:bool", "tag:yaml.org,2002:timestamp"}]
@@ -108,6 +129,9 @@ def load_workflow(path):
 
     if not isinstance(workflow, dict):
         raise AuditError("Isi workflow harus berupa struktur YAML dengan key.")
+    # Bind policy baselines to the very bytes parsed above, without rereading
+    # the file or including its potentially sensitive contents in a report.
+    workflow.source_digest = hashlib.sha256(data).hexdigest()
     jobs = workflow.get("jobs")
     if not isinstance(jobs, dict) or not jobs:
         raise AuditError("Workflow harus memiliki jobs yang tidak kosong.")
@@ -149,7 +173,10 @@ def load_workflow(path):
 def action_is_unpinned(uses):
     if not isinstance(uses, str):
         raise AuditError("Referensi uses harus berupa teks.")
-    if not uses or uses.startswith(("./", "docker://")):
+    # GitHub self-repository references resolve to the running workflow's
+    # exact commit and do not need a separate @SHA suffix. This check is not
+    # a complete validator for uses syntax, as with the existing ./ exemption.
+    if not uses or uses.startswith(("./", "$/", "docker://")):
         return False
     _, separator, reference = uses.rpartition("@")
     return not separator or re.fullmatch(r"[0-9a-fA-F]{40}", reference) is None
@@ -176,7 +203,7 @@ def _base_rules(ctx):
 
 
 def collect_findings(path, *, ignored=None, advisory_data=None):
-    from src.rules import basic, guards, trust
+    from src.rules import additional, basic, guards, trust
 
     workflow = load_workflow(path)
     ctx = RuleContext(Path(path), workflow, ignored=set(ignored or ()), advisory_data=advisory_data)
@@ -184,6 +211,7 @@ def collect_findings(path, *, ignored=None, advisory_data=None):
     basic.check(ctx)
     trust.check(ctx)
     guards.check(ctx)
+    additional.check(ctx)
     return ctx.findings
 
 
@@ -194,7 +222,10 @@ def print_text_findings(findings):
             location = f"job={finding['job']}"
             if finding["step"] is not None:
                 location += f", langkah={finding['step']}"
-        print(display_text(f"WARNING [{finding['rule_id']}]: {finding['file']}: {location}: {finding['message']}"))
+        source = finding["file"]
+        if isinstance(finding.get("line"), int):
+            source += f":{finding['line']}:{finding.get('column', 1)}"
+        print(display_text(f"WARNING [{finding['rule_id']}]: {source}: {location}: {finding['message']}"))
 
 
 def display_text(value):

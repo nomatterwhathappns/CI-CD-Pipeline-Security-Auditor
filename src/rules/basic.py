@@ -20,6 +20,28 @@ _DESCRIPTIVE_SUFFIX = re.compile(
 _VARIABLE_REFERENCE = re.compile(r"\$(?:[A-Za-z_]\w*|\{[A-Za-z_]\w*\})\Z")
 _DIGEST_IMAGE = re.compile(r".+@sha256:[0-9a-fA-F]{64}\Z")
 _BULK_SECRETS = re.compile(r"\btoJSON\s*\(\s*secrets\s*\)", re.IGNORECASE)
+_GH_AW_SECRET_NAMES = re.compile(r"[A-Z_][A-Z0-9_]*(?:,[A-Z_][A-Z0-9_]*)+\Z")
+_GH_AW_METADATA_VALUES = {
+    "GH_AW_GITHUB_TOKEN_SOURCE": {"app"},
+    "GH_AW_TOKEN_USAGE_SUMMARY_TITLE": {"Threat Detection Token Usage"},
+}
+
+
+def _known_credential_metadata(name, value):
+    """Recognize narrowly observed gh-aw labels, never blanket TOKEN suffixes.
+
+    Public cli/cli generated workflows use SECRET_NAMES for a comma-separated
+    list of environment identifiers, TOKEN_SOURCE for a provider enum, and
+    TOKEN_USAGE_SUMMARY_TITLE for a UI label. Credential-looking replacements
+    that do not have these exact values/shapes remain candidates.
+    """
+    if not isinstance(value, str):
+        return False
+    if name == "GH_AW_SECRET_NAMES":
+        # Require multiple identifiers: a bare token-like literal is not
+        # enough evidence that the value is a list of names rather than data.
+        return bool(_GH_AW_SECRET_NAMES.fullmatch(value))
+    return value in _GH_AW_METADATA_VALUES.get(name, ())
 
 
 def _literal_credential(value):
@@ -320,7 +342,9 @@ def _check_env(ctx, env, **location):
         return
     for name, value in env.items():
         if (isinstance(name, str) and _SENSITIVE_NAME.search(name)
-                and not _DESCRIPTIVE_SUFFIX.search(name) and _literal_credential(value)):
+                and not _DESCRIPTIVE_SUFFIX.search(name)
+                and not _known_credential_metadata(name, value)
+                and _literal_credential(value)):
             ctx.emit("CHA004", "A sensitive environment variable contains a literal credential candidate; use a secret reference.",
                      confidence="medium", env_variable=name, **location)
 

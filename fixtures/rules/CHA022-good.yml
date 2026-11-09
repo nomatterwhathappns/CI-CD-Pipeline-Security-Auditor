@@ -1,0 +1,13 @@
+# Static audit fixture; do not execute. Digest is illustrative, not a verified image.
+name: Container without privileged mode
+'on': push
+permissions:
+  contents: read
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    container:
+      image: example/image@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      options: --read-only --cap-drop ALL
+    steps:
+      - run: echo "Static example"

@@ -19,6 +19,8 @@ from src.engine import (
     print_text_findings,
 )
 from src.registry import RULES, SEVERITIES
+from src.policy import (PolicyError, apply_baseline, apply_policy, load_baseline,
+                        load_policy, write_baseline)
 
 
 def _error(report, path, message):
@@ -58,12 +60,12 @@ def _discover(target):
     return paths
 
 
-def make_report(target, ignored=None, advisory_file=None):
+def make_report(target, ignored=None, advisory_file=None, *, config_file=None, baseline_file=None):
     from src.rules.guards import load_advisory_data
 
     ignored = set(ignored or ())
     report = {
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "auditor_version": __version__,
         "files_scanned": 0,
         "findings_count": 0,
@@ -72,7 +74,31 @@ def make_report(target, ignored=None, advisory_file=None):
         "rules_enabled": [rule_id for rule_id in RULES if rule_id not in ignored],
         "rules_ignored": sorted(ignored),
         "advisory_snapshot": None,
+        "suppressed_findings": [],
+        "suppressed_findings_count": 0,
+        "existing_findings_count": 0,
+        "new_findings_count": 0,
+        "baseline": str(baseline_file) if baseline_file else None,
+        "policy": {"file": str(config_file) if config_file else None},
     }
+    try:
+        policy = load_policy(config_file)
+    except PolicyError as error:
+        _error(report, config_file, str(error))
+        return report
+    report["source_root"] = str(policy["root"])
+    ignored.update(policy["ignore"])
+    report["rules_enabled"] = [rule_id for rule_id in RULES if rule_id not in ignored]
+    report["rules_ignored"] = sorted(ignored)
+    report["policy"]["suppressions_count"] = len(policy["suppressions"])
+    for error in policy["errors"]:
+        _error(report, config_file, error)
+    known = set()
+    if baseline_file:
+        try:
+            known = load_baseline(baseline_file)
+        except PolicyError as error:
+            _error(report, baseline_file, str(error))
     try:
         data = load_advisory_data(advisory_file)
     except (OSError, UnicodeError, ValueError):
@@ -100,10 +126,17 @@ def make_report(target, ignored=None, advisory_file=None):
         report["files_scanned"] += 1
         report["findings"].extend(findings)
     report["findings_count"] = len(report["findings"])
+    apply_policy(report, policy)
+    apply_baseline(report, known)
     return report
 
 
 def print_report(report, output_format):
+    if output_format == "sarif":
+        from src.reporting import to_sarif
+
+        print(json.dumps(to_sarif(report, report.get("source_root")), indent=2, ensure_ascii=True, allow_nan=False))
+        return
     if output_format == "json":
         print(json.dumps(report, indent=2, ensure_ascii=True, allow_nan=False))
         return
@@ -115,15 +148,19 @@ def print_report(report, output_format):
             f"Selesai: {report['files_scanned']} file dipindai, "
             f"{report['findings_count']} temuan perlu ditinjau."
         )
+        if report.get("suppressed_findings_count"):
+            print(f"Dikecualikan melalui konfigurasi: {report['suppressed_findings_count']} temuan (lihat laporan JSON/SARIF untuk alasan).")
+        if report.get("baseline"):
+            print(f"Baseline: {report['existing_findings_count']} temuan lama, {report['new_findings_count']} temuan baru.")
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        description="Audit statis GitHub Actions dengan aturan CHA001–CHA020."
+        description=f"Audit statis GitHub Actions dengan {len(RULES)} aturan keamanan."
     )
     parser.add_argument("path", nargs="?", default=".github/workflows",
                         help="File/folder workflow (default: .github/workflows)")
-    parser.add_argument("--format", choices=("text", "json"), default="text",
+    parser.add_argument("--format", choices=("text", "json", "sarif"), default="text",
                         help="Format laporan (default: text).")
     parser.add_argument("--fail-on-findings", action="store_true",
                         help="Status 1 jika ada temuan yang mencapai ambang risiko.")
@@ -133,13 +170,21 @@ def main(argv=None):
                         help="Lewati aturan tertentu; opsi boleh diulang.")
     parser.add_argument("--advisory-file", type=Path,
                         help="Gunakan snapshot advisory JSON lokal yang tervalidasi.")
+    parser.add_argument("--config", type=Path,
+                        help="Konfigurasi JSON eksplisit untuk aturan dan pengecualian terbatas.")
+    parser.add_argument("--baseline", type=Path,
+                        help="Kenali temuan lama dari baseline JSON; hanya temuan baru menggagalkan CI.")
+    parser.add_argument("--write-baseline", type=Path,
+                        help="Simpan baseline setelah pemindaian berhasil; tinjau temuan sebelum menerima baseline.")
     parser.add_argument("--list-rules", action="store_true",
-                        help="Tampilkan 20 aturan beserta cakupan dan referensinya.")
+                        help="Tampilkan seluruh aturan beserta cakupan dan referensinya.")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args = parser.parse_args(argv)
     ignored = _parse_ignored(args.ignore, parser)
 
     if args.list_rules:
+        if args.format == "sarif":
+            parser.error("--list-rules memakai --format text atau json.")
         if args.format == "json":
             print(json.dumps({"rules": list(RULES.values())}, indent=2, ensure_ascii=False))
         else:
@@ -147,13 +192,20 @@ def main(argv=None):
                 print(f"{rule['rule_id']} [{rule['severity']}]: {rule['title']}")
         return 0
 
-    report = make_report(args.path, ignored=ignored, advisory_file=args.advisory_file)
+    report = make_report(args.path, ignored=ignored, advisory_file=args.advisory_file,
+                         config_file=args.config, baseline_file=args.baseline)
+    if args.write_baseline:
+        try:
+            write_baseline(args.write_baseline, report)
+        except PolicyError as error:
+            _error(report, args.write_baseline, str(error))
     print_report(report, args.format)
     if report["errors"]:
         return 2
     threshold = SEVERITIES[args.fail_on_severity]
     if args.fail_on_findings and any(
         SEVERITIES[finding["severity"]] >= threshold
+        and finding.get("baseline_state") != "existing"
         for finding in report["findings"]
     ):
         return 1
