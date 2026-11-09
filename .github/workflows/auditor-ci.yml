@@ -37,13 +37,13 @@ jobs:
       - name: Audit workflow proyek
         run: |
           mkdir -p reports
-          cha-auditor .github/workflows --format json --fail-on-findings > reports/audit-report.json
+          cha-auditor .github/workflows --deep --repo-root . --format json --fail-on-findings > reports/audit-report.json
 
       - name: Buat laporan SARIF
         if: always()
         run: |
           mkdir -p reports
-          cha-auditor .github/workflows --format sarif > reports/audit-report.sarif
+          cha-auditor .github/workflows --deep --repo-root . --format sarif > reports/audit-report.sarif
 
       - name: Simpan laporan audit
         if: always()

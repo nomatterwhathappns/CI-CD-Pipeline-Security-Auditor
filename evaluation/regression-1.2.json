@@ -1,0 +1,56 @@
+{
+  "auditor_version": "1.2.0",
+  "generated_at": "2026-11-09T15:02:47.077266+00:00",
+  "files_expected": 56,
+  "files_verified": 56,
+  "files_scanned": 56,
+  "findings_count": 26,
+  "rule_counts": {
+    "CHA001": 22,
+    "CHA009": 4
+  },
+  "repositories": {
+    "pallets/flask": {
+      "files_scanned": 5,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "pypa/pip": {
+      "files_scanned": 6,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "psf/requests": {
+      "files_scanned": 8,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "cli/cli": {
+      "files_scanned": 15,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "expressjs/express": {
+      "files_scanned": 5,
+      "findings_count": 0,
+      "rule_counts": {}
+    },
+    "docker/buildx": {
+      "files_scanned": 10,
+      "findings_count": 1,
+      "rule_counts": {
+        "CHA001": 1
+      }
+    },
+    "actions/checkout": {
+      "files_scanned": 7,
+      "findings_count": 25,
+      "rule_counts": {
+        "CHA001": 21,
+        "CHA009": 4
+      }
+    }
+  },
+  "errors": [],
+  "interpretation": "Compatibility and pattern-review pilot, not a representative accuracy or exploitability measurement."
+}

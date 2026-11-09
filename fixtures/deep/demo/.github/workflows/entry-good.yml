@@ -1,0 +1,7 @@
+name: Keep indirect PR data as data
+on: pull_request
+jobs:
+  call:
+    uses: ./.github/workflows/reusable-good.yml
+    with:
+      title: ${{ github.event.pull_request.title }}

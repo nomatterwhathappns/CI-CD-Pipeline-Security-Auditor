@@ -24,7 +24,7 @@ def _artifact(path, root):
         return {"uri": resolved.as_uri()}
 
 
-def _location_fingerprint(finding, artifact):
+def _location_fingerprint(finding, artifact, root=None):
     """Stable, source-free identity for GitHub's supported fingerprint key.
 
     This identifies a finding within its workflow/job/step scope; it does not
@@ -35,6 +35,9 @@ def _location_fingerprint(finding, artifact):
                 finding.get("job"), finding.get("step"), finding["message"],
                 finding.get("env_variable"), finding.get("container_type"),
                 finding.get("service"), finding.get("advisory_id")]
+    if finding.get("analysis_call_path"):
+        identity += [[_artifact(path, Path(root or Path.cwd()).resolve())["uri"]
+                      for path in finding["analysis_call_path"] if isinstance(path, str)]]
     payload = json.dumps(identity, ensure_ascii=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("ascii")).hexdigest()
 
@@ -73,8 +76,25 @@ def to_sarif(report, root=None):
                            "step": finding.get("step"), "locationScope": finding.get("location_scope")},
         }
         result["partialFingerprints"] = {
-            "primaryLocationLineHash": _location_fingerprint(finding, physical["artifactLocation"])
+            "primaryLocationLineHash": _location_fingerprint(finding, physical["artifactLocation"], root)
         }
+        trace = finding.get("dataflow_trace", [])
+        if isinstance(trace, list) and trace:
+            locations = []
+            for node in trace[:32]:
+                if not isinstance(node, dict) or not isinstance(node.get("file"), str):
+                    continue
+                physical_node = {"artifactLocation": _artifact(node["file"], root)}
+                if type(node.get("line")) is int and node["line"] > 0:
+                    physical_node["region"] = {"startLine": node["line"]}
+                    if type(node.get("column")) is int and node["column"] > 0:
+                        physical_node["region"]["startColumn"] = node["column"]
+                locations.append({"location": {"physicalLocation": physical_node,
+                                   "message": {"text": f"{node.get('kind', 'flow')}: {node.get('name', 'value')}"}}})
+            if locations:
+                result["codeFlows"] = [{"threadFlows": [{"locations": locations}]}]
+        if finding.get("analysis_call_paths"):
+            result["properties"]["analysisCallPaths"] = finding["analysis_call_paths"]
         if finding.get("fingerprint"):
             result["partialFingerprints"]["chaSource/v1"] = finding["fingerprint"]
         if finding.get("baseline_state"):
@@ -102,6 +122,7 @@ def to_sarif(report, root=None):
                              "toolExecutionNotifications": notifications}],
             "results": results,
             "properties": {"filesScanned": report["files_scanned"],
-                           "advisorySnapshot": report.get("advisory_snapshot")},
+                           "advisorySnapshot": report.get("advisory_snapshot"),
+                           "analysis": report.get("analysis")},
         }],
     }

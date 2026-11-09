@@ -109,7 +109,8 @@ def _validate_env(scope):
         raise AuditError("Nilai env harus berupa teks atau nilai sederhana.")
 
 
-def load_workflow(path):
+def load_yaml_document(path):
+    """Load one bounded YAML mapping without assuming workflow/action schema."""
     path = Path(path)
     try:
         with path.open("rb") as stream:
@@ -128,10 +129,15 @@ def load_workflow(path):
         raise AuditError(f"YAML tidak valid{location}.") from None
 
     if not isinstance(workflow, dict):
-        raise AuditError("Isi workflow harus berupa struktur YAML dengan key.")
+        raise AuditError("Isi dokumen harus berupa struktur YAML dengan key.")
     # Bind policy baselines to the very bytes parsed above, without rereading
     # the file or including its potentially sensitive contents in a report.
     workflow.source_digest = hashlib.sha256(data).hexdigest()
+    return workflow
+
+
+def validate_workflow(workflow):
+    """Validate the workflow fields needed by the bounded rule engines."""
     jobs = workflow.get("jobs")
     if not isinstance(jobs, dict) or not jobs:
         raise AuditError("Workflow harus memiliki jobs yang tidak kosong.")
@@ -170,6 +176,10 @@ def load_workflow(path):
     return workflow
 
 
+def load_workflow(path):
+    return validate_workflow(load_yaml_document(path))
+
+
 def action_is_unpinned(uses):
     if not isinstance(uses, str):
         raise AuditError("Referensi uses harus berupa teks.")
@@ -183,6 +193,8 @@ def action_is_unpinned(uses):
 
 
 def _base_rules(ctx):
+    from src.analysis.dataflow import direct_script_source
+
     if ctx.workflow.get("permissions") == "write-all":
         ctx.emit("CHA003", "permissions: write-all meminta izin tulis luas. Tinjau dan batasi sesuai kebutuhan.")
     for name, job in ctx.jobs():
@@ -198,21 +210,38 @@ def _base_rules(ctx):
             scripts = [step.get("run", "")]
             if uses.split("@")[0].lower() == "actions/github-script":
                 scripts.append((step.get("with") or {}).get("script", ""))
-            if any(untrusted(script) for script in scripts):
+            states = [(script, direct_script_source(script)) for script in scripts]
+            if any(untrusted(script) if state is None else state for script, state in states):
                 ctx.emit("CHA002", "data PR dipakai langsung dalam run:. Tinjau risiko injeksi perintah shell.", job=name, step=number)
 
 
-def collect_findings(path, *, ignored=None, advisory_data=None):
+def analyze_workflow_document(path, workflow, *, ignored=None, advisory_data=None, input_sources=None, env_sources=None,
+                              call_output_sources=None):
+    """Analyze an already loaded workflow; return findings plus flow bindings."""
     from src.rules import additional, basic, guards, trust
+    from src.analysis import dataflow
 
-    workflow = load_workflow(path)
     ctx = RuleContext(Path(path), workflow, ignored=set(ignored or ()), advisory_data=advisory_data)
     _base_rules(ctx)
     basic.check(ctx)
     trust.check(ctx)
     guards.check(ctx)
     additional.check(ctx)
-    return ctx.findings
+    flow = dataflow.check(ctx, input_sources=input_sources, env_sources=env_sources,
+                          call_output_sources=call_output_sources)
+    return ctx.findings, flow
+
+
+def collect_workflow_findings(path, workflow, *, ignored=None, advisory_data=None, input_sources=None, env_sources=None,
+                               call_output_sources=None):
+    return analyze_workflow_document(path, workflow, ignored=ignored, advisory_data=advisory_data,
+                                     input_sources=input_sources, env_sources=env_sources,
+                                     call_output_sources=call_output_sources)[0]
+
+
+def collect_findings(path, *, ignored=None, advisory_data=None):
+    workflow = load_workflow(path)
+    return collect_workflow_findings(path, workflow, ignored=ignored, advisory_data=advisory_data)
 
 
 def print_text_findings(findings):
@@ -226,6 +255,11 @@ def print_text_findings(findings):
         if isinstance(finding.get("line"), int):
             source += f":{finding['line']}:{finding.get('column', 1)}"
         print(display_text(f"WARNING [{finding['rule_id']}]: {source}: {location}: {finding['message']}"))
+        trace = finding.get("dataflow_trace", [])
+        if isinstance(trace, list) and trace:
+            route = " -> ".join(f"{node.get('kind', 'flow')}:{node.get('name', 'value')}"
+                                for node in trace[:32] if isinstance(node, dict))
+            print(display_text(f"  Alur: {route}"))
 
 
 def display_text(value):

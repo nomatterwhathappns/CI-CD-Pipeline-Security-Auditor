@@ -1,0 +1,12 @@
+name: Title remains data
+description: Static example; the auditor never runs this action.
+inputs:
+  title:
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        TITLE: ${{ inputs.title }}
+      run: printf '%s\n' "$TITLE"

@@ -14,7 +14,7 @@ from src.registry import RULES, SEVERITIES
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "fixtures" / "rules"
 MANIFEST = json.loads((EXAMPLES / "manifest.json").read_text(encoding="utf-8"))
-EXPECTED_IDS = {f"CHA{number:03d}" for number in range(1, 23)}
+EXPECTED_IDS = {f"CHA{number:03d}" for number in range(1, 24)}
 FAKE_CREDENTIAL = "DEMO_ONLY_NOT_A_REAL_SECRET"
 
 

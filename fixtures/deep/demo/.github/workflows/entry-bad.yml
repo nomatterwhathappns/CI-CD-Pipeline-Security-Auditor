@@ -1,0 +1,7 @@
+name: Demonstrate indirect source across local files
+on: pull_request
+jobs:
+  call:
+    uses: ./.github/workflows/reusable-bad.yml
+    with:
+      title: ${{ github.event.pull_request.title }}

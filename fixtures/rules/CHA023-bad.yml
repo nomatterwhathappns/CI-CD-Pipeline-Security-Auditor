@@ -1,0 +1,9 @@
+name: Indirect PR data in script source
+on: pull_request
+env:
+  TITLE: ${{ github.event.pull_request.title }}
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{ env.TITLE }}"

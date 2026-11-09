@@ -1,6 +1,7 @@
 """Command line interface; rule implementations live in src/rules."""
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -17,6 +18,8 @@ from src.engine import (
     collect_findings,
     display_text,
     print_text_findings,
+    analyze_workflow_document,
+    load_workflow,
 )
 from src.registry import RULES, SEVERITIES
 from src.policy import (PolicyError, apply_baseline, apply_policy, load_baseline,
@@ -60,12 +63,13 @@ def _discover(target):
     return paths
 
 
-def make_report(target, ignored=None, advisory_file=None, *, config_file=None, baseline_file=None):
+def make_report(target, ignored=None, advisory_file=None, *, config_file=None, baseline_file=None,
+                deep=False, repo_root=None, fail_on_unresolved=False):
     from src.rules.guards import load_advisory_data
 
     ignored = set(ignored or ())
     report = {
-        "schema_version": "1.2",
+        "schema_version": "1.3",
         "auditor_version": __version__,
         "files_scanned": 0,
         "findings_count": 0,
@@ -80,6 +84,8 @@ def make_report(target, ignored=None, advisory_file=None, *, config_file=None, b
         "new_findings_count": 0,
         "baseline": str(baseline_file) if baseline_file else None,
         "policy": {"file": str(config_file) if config_file else None},
+        "analysis": {"mode": "deep" if deep else "workflow", "files_analyzed": [],
+                     "unresolved_references": [], "edges": []},
     }
     try:
         policy = load_policy(config_file)
@@ -116,15 +122,45 @@ def make_report(target, ignored=None, advisory_file=None, *, config_file=None, b
         _error(report, target, message)
         return report
 
-    for path in paths:
-        try:
-            findings = collect_findings(path, ignored=ignored, advisory_data=data)
-        except (OSError, UnicodeError, ValueError) as error:
-            message = str(error) if isinstance(error, AuditError) else "File gagal diperiksa; periksa struktur workflow dan konfigurasi."
-            _error(report, path, message)
-            continue
-        report["files_scanned"] += 1
-        report["findings"].extend(findings)
+    if deep:
+        from src.analysis.graph import analyze_graph
+
+        result = analyze_graph(paths, repo_root or Path.cwd(), ignored=ignored, advisory_data=data)
+        report["findings"] = result["findings"]
+        report["errors"].extend(result["errors"])
+        report["files_scanned"] = len(result["files_analyzed"])
+        report["analysis"].update(files_analyzed=result["files_analyzed"],
+                                  unresolved_references=result["unresolved"], edges=result["edges"],
+                                  limits=result.get("limits", {}),
+                                  contexts_analyzed=result.get("contexts_analyzed", 0),
+                                  total_source_bytes=result.get("total_source_bytes", 0),
+                                  dataflow_limits=result.get("dataflow_limits", {}))
+        if result.get("source_digests"):
+            from src.policy import relative_file
+
+            root = Path(repo_root or Path.cwd()).resolve()
+            identity = sorted((relative_file(path, root), digest)
+                              for path, digest in result["source_digests"].items())
+            digest = hashlib.sha256(json.dumps(identity, ensure_ascii=True).encode("ascii")).hexdigest()
+            report["analysis"]["source_digest"] = digest
+            for finding in report["findings"]:
+                finding["analysis_digest"] = digest
+        if fail_on_unresolved and result["unresolved"]:
+            _error(report, target, "Ada referensi yang belum dapat dianalisis; lihat analysis.unresolved_references.")
+    else:
+        for path in paths:
+            try:
+                findings, flow = analyze_workflow_document(
+                    path, load_workflow(path), ignored=ignored, advisory_data=data)
+            except (OSError, UnicodeError, ValueError) as error:
+                message = str(error) if isinstance(error, AuditError) else "File gagal diperiksa; periksa struktur workflow dan konfigurasi."
+                _error(report, path, message)
+                continue
+            report["files_scanned"] += 1
+            report["analysis"]["files_analyzed"].append(str(path))
+            report["analysis"]["unresolved_references"].extend(flow.get("unresolved", []))
+            report["analysis"]["dataflow_limits"] = flow.get("limits", {})
+            report["findings"].extend(findings)
     report["findings_count"] = len(report["findings"])
     apply_policy(report, policy)
     apply_baseline(report, known)
@@ -152,6 +188,9 @@ def print_report(report, output_format):
             print(f"Dikecualikan melalui konfigurasi: {report['suppressed_findings_count']} temuan (lihat laporan JSON/SARIF untuk alasan).")
         if report.get("baseline"):
             print(f"Baseline: {report['existing_findings_count']} temuan lama, {report['new_findings_count']} temuan baru.")
+        unresolved = report.get("analysis", {}).get("unresolved_references", [])
+        if unresolved:
+            print(f"Cakupan: {len(unresolved)} referensi belum dianalisis; lihat laporan JSON/SARIF untuk batasnya.")
 
 
 def main(argv=None):
@@ -176,10 +215,18 @@ def main(argv=None):
                         help="Kenali temuan lama dari baseline JSON; hanya temuan baru menggagalkan CI.")
     parser.add_argument("--write-baseline", type=Path,
                         help="Simpan baseline setelah pemindaian berhasil; tinjau temuan sebelum menerima baseline.")
+    parser.add_argument("--deep", action="store_true",
+                        help="Telusuri composite action dan reusable workflow lokal secara terbatas.")
+    parser.add_argument("--repo-root", type=Path,
+                        help="Batas folder repo untuk --deep (default: folder terminal saat ini).")
+    parser.add_argument("--fail-on-unresolved", action="store_true",
+                        help="Bersama --deep, status 2 bila ada referensi yang belum dianalisis.")
     parser.add_argument("--list-rules", action="store_true",
                         help="Tampilkan seluruh aturan beserta cakupan dan referensinya.")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args = parser.parse_args(argv)
+    if not args.deep and (args.repo_root is not None or args.fail_on_unresolved):
+        parser.error("--repo-root dan --fail-on-unresolved memerlukan --deep.")
     ignored = _parse_ignored(args.ignore, parser)
 
     if args.list_rules:
@@ -193,7 +240,8 @@ def main(argv=None):
         return 0
 
     report = make_report(args.path, ignored=ignored, advisory_file=args.advisory_file,
-                         config_file=args.config, baseline_file=args.baseline)
+                         config_file=args.config, baseline_file=args.baseline,
+                         deep=args.deep, repo_root=args.repo_root, fail_on_unresolved=args.fail_on_unresolved)
     if args.write_baseline:
         try:
             write_baseline(args.write_baseline, report)

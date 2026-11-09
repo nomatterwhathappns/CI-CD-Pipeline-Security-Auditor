@@ -183,6 +183,13 @@
       "good": "CHA022-good.yml",
       "source": "https://docs.docker.com/reference/cli/docker/container/run/#escalate-container-privileges---privileged",
       "notes": "Literal privileged Docker option versus reduced capabilities; image digest is illustrative, not verified."
+    },
+    {
+      "rule_id": "CHA023",
+      "bad": "CHA023-bad.yml",
+      "good": "CHA023-good.yml",
+      "source": "https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks",
+      "notes": "Follow PR title through env before expression interpolation into executable source; quoted shell variable remains data."
     }
   ]
 }

@@ -1,5 +1,21 @@
 # Catatan perubahan
 
+## 1.2.0 — 2026-11-09
+
+Perluasan analisis berbasis aturan untuk menghubungkan sumber data, pemakaiannya dalam script, serta file lokal yang dipanggil workflow. Tidak ada model AI yang dipanggil saat pemindaian, dan cakupan ini belum dibandingkan dengan kemampuan umum model AI.
+
+### Penelusuran data dan file
+
+- CHA023 menandai data tak tepercaya yang mencapai sumber script melalui bentuk environment, step output, job output, `needs`, atau input yang dikenali. Bukti penelusuran memakai identitas lokasi/variabel, tanpa menyalin nilai input atau script mentah.
+- CHA002 memakai pembacaan ekspresi yang didukung untuk mengenali bentuk akses konteks dengan titik atau kurung siku, sekaligus membedakan hasil predikat boolean dan argumen `format` yang tidak digunakan dari teks sumber script. Bentuk yang belum dapat dianalisis tetap memiliki batas yang dilaporkan.
+- Mode `--deep` dan akar repo eksplisit memperluas pembacaan ke composite action serta reusable workflow lokal. Referensi yang belum dapat dianalisis dicatat; isi file tidak dijalankan dan dependensi remote tidak diunduh.
+- Penelusuran memiliki batas kedalaman, jumlah file/konteks, serta byte. Siklus dan batas yang tercapai tidak diperlakukan sebagai bukti keamanan.
+- Laporan JSON schema 1.3 mempertahankan field lama dan menambahkan metadata cakupan analisis. Dokumentasi menjelaskan batas penelusuran antarfile, snapshot checkout, dan bentuk data yang belum didukung.
+- Contoh tiga file memperlihatkan perbedaan input PR yang menjadi sumber script dan input yang tetap diperlakukan sebagai data. CI memakai mode deep; tiga implementasi action remote tetap tercatat sebagai belum dibaca.
+- Pemeriksaan kompatibilitas pada 56 workflow historis berhasil tanpa kesalahan dan mempertahankan 26 peringatan konfigurasi. Ini bukan pengukuran akurasi pada sampel independen.
+
+Status tetap alat pemeriksaan tambahan dengan peninjauan manusia. Pengujian regresi memperlihatkan perilaku pada kasus yang diperiksa; tidak memberi persentase ketepatan untuk seluruh workflow GitHub Actions. Hasil pilot 56 workflow pada versi 1.1.0 tetap merupakan hasil historis versi tersebut.
+
 ## 1.1.0 — 2026-11-09
 
 Perbaikan akurasi dan alat penerapan bertahap untuk GitHub Actions. Status versi ini tetap cocok untuk uji coba dengan peninjauan manusia; kelulusan tes belum mengukur akurasi pada seluruh repo nyata.

@@ -70,6 +70,9 @@ _SPECS = [
     ("CHA022", "Privileged job or service container", "high",
      "Review runner isolation and replace privileged mode with only required capabilities where possible.",
      "https://docs.docker.com/reference/cli/docker/container/run/#escalate-container-privileges---privileged"),
+    ("CHA023", "Untrusted data indirectly becomes executable script source", "high",
+     "Keep untrusted values as quoted data; do not interpolate propagated environment, input or output values into script source.",
+     "https://docs.github.com/en/actions/reference/security/secure-use#good-practices-for-mitigating-script-injection-attacks"),
 ]
 
 RULES = {

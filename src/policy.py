@@ -113,6 +113,11 @@ def fingerprint(finding, root):
                 finding.get("job"), finding.get("step"), finding["message"],
                 finding.get("source_digest"), finding.get("advisory_id"),
                 finding.get("severity"), finding.get("confidence")]
+    if finding.get("analysis_digest"):
+        # A callee's source alone cannot identify caller-controlled flow.
+        # Retain old single-workflow identities; deep analysis is source-bound
+        # to every analyzed document, including the callers providing inputs.
+        identity += ["analysis-source-sha256-v1", finding["analysis_digest"]]
     return hashlib.sha256(json.dumps(identity, ensure_ascii=True, separators=(",", ":")).encode()).hexdigest()
 
 

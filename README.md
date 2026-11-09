@@ -1,8 +1,10 @@
 # CI/CD Pipeline Security Auditor
 
-Auditor statis GitHub Actions berbasis Python. Versi **1.1.0** menyediakan **22 aturan CHA001–CHA022** untuk menandai konfigurasi yang perlu ditinjau sebelum workflow digunakan atau perubahan digabungkan.
+Auditor statis GitHub Actions berbasis Python. Versi **1.2.0** menyediakan **23 aturan CHA001–CHA023** untuk menandai konfigurasi yang perlu ditinjau sebelum workflow digunakan atau perubahan digabungkan.
 
 Program membaca YAML sebagai data. Isi workflow, script, action, dan artifact tidak dijalankan. Auditor dapat dipakai dari terminal atau sebagai pemeriksaan di CI.
+
+CHA023 menelusuri beberapa perpindahan data di dalam workflow, sehingga data PR yang sudah dipindahkan melalui environment atau output tetap dapat ditandai saat dimasukkan kembali ke kode script. Mode `--deep` memperluas pemeriksaan ke composite action dan reusable workflow lokal yang dirujuk. Pemeriksaan ini berbasis aturan dan penelusuran data; tidak memanggil model AI.
 
 Versi ini cocok untuk uji coba sebagai pemeriksaan tambahan pada proyek nyata. Akurasi pada kumpulan besar repo yang dinilai secara independen belum terukur. Jumlah aturan dan kelulusan tes bukan ukuran persentase serangan yang dapat dicegah.
 
@@ -85,15 +87,28 @@ python3 src/auditor.py --version
 | CHA020 | Referensi action cocok dengan snapshot advisory lokal | high |
 | CHA021 | Environment mengaktifkan kembali workflow command yang tidak aman | high |
 | CHA022 | Container job atau service meminta mode privileged secara eksplisit | high |
+| CHA023 | Data tak tepercaya mencapai kode script melalui environment, output, atau input yang ditelusuri | high |
 
 `severity` adalah tingkat risiko yang ditetapkan proyek. `confidence` menunjukkan keyakinan terhadap kecocokan pola yang dikenali. Keduanya bukan skor CVSS atau bukti bahwa eksploitasi telah terjadi. Misalnya, CHA004 menandai kandidat kredensial, sedangkan CHA005 meminta peninjauan atas pembagian secret yang mungkin memang disengaja.
 
-Lihat [panduan CHA001–CHA020](docs/RULES.md) dan [panduan CHA021–CHA022](docs/ADDITIONAL_RULES.md) untuk kondisi pemicu, batas pemeriksaan, contoh, perbaikan, dan sumbernya. Daftar aturan juga tersedia melalui CLI:
+Lihat [panduan CHA001–CHA020](docs/RULES.md), [panduan CHA021–CHA022](docs/ADDITIONAL_RULES.md), dan [panduan penelusuran data CHA023](docs/DATAFLOW.md) untuk kondisi pemicu, batas pemeriksaan, contoh, perbaikan, dan sumbernya. Daftar aturan juga tersedia melalui CLI:
 
 ```bash
 python3 src/auditor.py --list-rules
 python3 src/auditor.py --list-rules --format json
 ```
+
+## Menelusuri file yang dipanggil workflow
+
+Dari folder utama proyek yang ingin diperiksa, setelah CLI auditor terpasang:
+
+```bash
+cha-auditor .github/workflows --deep --repo-root . --format json
+```
+
+`--repo-root` membatasi akar repo yang boleh dibaca. Mode `--deep` mengikuti referensi lokal `./` dan `$/` untuk composite action dan reusable workflow. File yang dirujuk dibaca sebagai data; tidak ada checkout, unduhan action, atau eksekusi script. Referensi remote serta bentuk yang belum didukung dicatat sebagai belum dianalisis.
+
+Laporan menyertakan cakupan penelusuran dan bagian yang belum terselesaikan. Pemindaian tanpa temuan masih dapat memiliki cakupan yang tidak lengkap. Panduan penggunaan, batas ukuran/penelusuran, konteks pemanggil, dan interpretasi hasil ada di [panduan analisis mendalam](docs/DEEP_ANALYSIS.md).
 
 ## Membaca hasil dan menentukan status CI
 
@@ -153,7 +168,7 @@ python3 -m json.tool reports/audit-report.json
 
 Folder `reports/` sudah diabaikan oleh Git. Menambahkan `--fail-on-findings` tetap menyimpan laporan saat ada temuan, sekaligus dapat menghasilkan status `1`.
 
-Laporan JSON memakai `schema_version: "1.2"` dan mempertahankan field inti dari versi sebelumnya:
+Laporan JSON memakai `schema_version: "1.3"` dan mempertahankan field inti dari versi sebelumnya:
 
 | Field | Isi |
 |---|---|
@@ -166,8 +181,9 @@ Laporan JSON memakai `schema_version: "1.2"` dan mempertahankan field inti dari 
 | `suppressed_findings_count`, `suppressed_findings` | Temuan yang dikecualikan secara terarah, dengan alasan dan tanggal kedaluwarsa. |
 | `existing_findings_count`, `new_findings_count` | Jumlah temuan aktif yang sudah ada dalam baseline dan jumlah temuan baru. |
 | `policy`, `baseline`, `source_root` | File kebijakan/baseline yang dipakai dan akar untuk identitas path sumber. |
+| `analysis` | Mode analisis, cakupan penelusuran file lokal, serta referensi/bagian yang belum dianalisis. |
 
-Setiap temuan memuat `rule_id`, `file`, `job`, `step`, `message`, `severity`, `confidence`, dan `remediation`, ditambah lokasi sumber serta detail advisory yang relevan. `line`, `column`, dan `location_scope` membantu menavigasi awal scope YAML. `source_digest` adalah SHA-256 seluruh isi file, sedangkan `fingerprint` mengikat identitas temuan untuk baseline. `baseline_state` bernilai `existing` atau `new` pada laporan CLI yang selesai diproses. `job` atau `step` bernilai `null` jika lokasi tersebut tidak berlaku.
+Setiap temuan memuat `rule_id`, `file`, `job`, `step`, `message`, `severity`, `confidence`, dan `remediation`, ditambah lokasi sumber serta detail advisory yang relevan. `line`, `column`, dan `location_scope` membantu menavigasi awal scope YAML. `source_digest` adalah SHA-256 seluruh isi file, sedangkan `fingerprint` mengikat identitas temuan untuk baseline. Bukti CHA023 memakai `dataflow_trace`; temuan deep dapat menyertakan `analysis_call_path`, `analysis_call_paths`, dan `analysis_digest`. Field tersebut memuat identitas lokasi dan digest, bukan nilai input mentah. `baseline_state` bernilai `existing` atau `new` pada laporan CLI yang selesai diproses. `job` atau `step` bernilai `null` jika lokasi tersebut tidak berlaku.
 
 Kesalahan pemindaian tetap dilaporkan sebagai JSON. Kesalahan argumen CLI ditangani oleh `argparse` dan dapat tampil sebagai teks di stderr, termasuk ketika `--format json` dipilih.
 
@@ -248,6 +264,8 @@ Langkah upload memakai `if: always()` agar penyimpanan tetap dicoba setelah kega
 | `src/rules/guards.py` | CHA018–CHA020 dan validasi snapshot advisory. |
 | `src/rules/additional.py` | CHA021–CHA022. |
 | `src/rules/common.py` | Konteks aturan dan helper bersama. |
+| `src/analysis/dataflow.py` | Penelusuran data terbatas dan CHA023. |
+| `src/analysis/graph.py` | Penelusuran composite action dan reusable workflow lokal pada mode `--deep`. |
 | `src/registry.py` | Identitas, severity, perbaikan, dan referensi aturan. |
 | `src/data/advisories.json` | Snapshot advisory bawaan. |
 | `fixtures/`, `tests/`, `docs/` | Contoh statis, pengujian, dan panduan. |
@@ -255,6 +273,7 @@ Langkah upload memakai `if: always()` agar penyimpanan tetap dicoba setelah kega
 ## Batas pemeriksaan
 
 - Auditor mengenali pola statis terbatas. Parser shell, alur data, kondisi eksekusi, dan konfigurasi GitHub tidak dianalisis secara lengkap. Kasus di luar pola yang didukung tetap belum dapat dipastikan.
+- Mode `--deep` memeriksa snapshot file lokal pada akar repo yang diberikan. Auditor tidak membuktikan bahwa snapshot itu sama dengan kode yang benar-benar akan di-checkout atau dijalankan pada suatu run GitHub. JavaScript/Docker action, script pembantu, dependensi remote, dan bentuk dinamis di luar dukungan dicatat atau dijelaskan sebagai batas analisis; tidak dinyatakan aman.
 - Temuan memerlukan peninjauan. Tidak adanya temuan bukan jaminan keamanan, dan SHA atau digest yang dipatok tetap perlu ditinjau serta diperbarui.
 - Pemeriksaan script dibatasi pada bentuk yang dikenali. Contohnya, CHA007–CHA008 tidak menyelesaikan URL dinamis, alias atau fungsi shell, heredoc, dan sejumlah opsi downloader yang tidak dikenali.
 - CHA001 mengenali referensi lokal `./`, referensi repo sendiri `$/`, dan Docker sebagai bentuk di luar pemeriksaan SHA remote. Lockfile GitHub, cakupan workflow yang terdaftar, dan penerapan kebijakannya tidak diverifikasi. Pada repo yang memakai lockfile secara sah, referensi tag masih dapat memicu CHA001; tinjau kebijakan tersebut sebelum menambahkan pengecualian terarah. Asal-usul commit juga belum diverifikasi.

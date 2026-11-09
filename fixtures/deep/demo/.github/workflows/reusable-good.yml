@@ -1,0 +1,14 @@
+name: Forward an input to an action that treats it as data
+on:
+  workflow_call:
+    inputs:
+      title:
+        type: string
+        required: true
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/title-good
+        with:
+          title: ${{ inputs.title }}
